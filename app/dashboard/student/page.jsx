@@ -158,224 +158,221 @@ export default function StudentDashboard() {
         Loading...
       </div>
     );
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-6 pt-32 pb-20">
-      {/* Header */}
-      <motion.div
-        className="flex items-center justify-between mb-12"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="flex items-center gap-4 cursor-pointer">
-          <div className="w-20 h-20 rounded-full border-4 border-[#ffd200] shadow-lg bg-gray-600 flex items-center justify-center text-3xl font-bold">
-            {student.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">{student.name}</h2>
-            <p className="text-gray-300">{student.email}</p>
-            {/* 🚫 Removed year display here */}
-          </div>
+return (
+  <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
+    {/* Header */}
+    <motion.div
+      className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12 gap-4 sm:gap-0"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="flex items-center gap-4 cursor-pointer flex-wrap sm:flex-nowrap">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-[#ffd200] shadow-lg bg-gray-600 flex items-center justify-center text-2xl sm:text-3xl font-bold">
+          {student.name.charAt(0).toUpperCase()}
         </div>
-
-        <button
-          className="bg-[#93b874] px-6 py-2 rounded-xl hover:bg-green-600 transition-colors"
-          onClick={() => setShowForm(true)}
-        >
-          Apply Leave
-        </button>
-      </motion.div>
-
-      {/* Leave Summary */}
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
-        {["Pending", "Approved", "Rejected"].map((status, idx) => {
-          const count = leaves.filter((l) => l.status === status).length;
-          const colors = { Pending: "#ffd200", Approved: "#93b874", Rejected: "#ff6363" };
-          return (
-            <motion.div
-              key={status}
-              className="p-6 rounded-3xl shadow-lg"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.05)",
-                borderLeft: `6px solid ${colors[status]}`,
-              }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.2 }}
-            >
-              <h3 className="text-xl font-bold" style={{ color: colors[status] }}>
-                {status}
-              </h3>
-              <p className="text-2xl mt-2">{count}</p>
-            </motion.div>
-          );
-        })}
+        <div>
+          <h2 className="text-lg sm:text-2xl font-bold">{student.name}</h2>
+          <p className="text-gray-300 text-sm sm:text-base">{student.email}</p>
+        </div>
       </div>
-{/* Leave Table */}
-<div className="overflow-x-auto rounded-xl shadow-lg mb-12">
-  <table className="min-w-full text-white bg-gray-900 rounded-xl">
-    <thead className="bg-gray-800">
-      <tr>
-        <th className="py-3 px-6 text-left">From</th>
-        <th className="py-3 px-6 text-left">To</th>
-        <th className="py-3 px-6 text-left">Type</th>
-        <th className="py-3 px-6 text-left">Year</th>
-        <th className="py-3 px-6 text-left">Faculty</th>
-        <th className="py-3 px-6 text-left">Reason</th>
-        <th className="py-3 px-6 text-left">Status</th>
-        <th className="py-3 px-6 text-left">Comment</th> 
-        <th className="py-3 px-6 text-left">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {leaves.map((leave) => (
-        <tr
-          key={leave._id}
-          className="border-b border-gray-700 hover:bg-gray-700 transition-colors"
-        >
-          <td className="py-3 px-6">{leave.fromDate}</td>
-          <td className="py-3 px-6">{leave.toDate}</td>
-          <td className="py-3 px-6">{leave.type}</td>
-          <td className="py-3 px-6">{leave.year}</td>
-          <td className="py-3 px-6">{leave.facultyName}</td>
-          <td className="py-3 px-6">{leave.reason}</td>
-          <td
-            className="py-3 px-6 font-bold"
-            style={{
-              color:
-                leave.status === "Approved"
-                  ? "#93b874"
-                  : leave.status === "Rejected"
-                  ? "#ff6363"
-                  : "#ffd200",
-            }}
-          >
-            {leave.status}
-          </td>
-          <td className="py-3 px-6">
-            {leave.comment ? (
-              <span className="italic text-gray-300">{leave.comment}</span>
-            ) : (
-              <span className="text-gray-500">—</span>
-            )}
-          </td>
-          <td className="py-3 px-6">
-            <button
-              className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded-lg text-sm"
-              onClick={() => handleDeleteLeave(leave._id)}
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
 
+      <button
+        className="bg-[#93b874] px-4 sm:px-6 py-2 rounded-xl hover:bg-green-600 transition-colors text-sm sm:text-base w-full sm:w-auto"
+        onClick={() => setShowForm(true)}
+      >
+        Apply Leave
+      </button>
+    </motion.div>
 
-      {/* Apply Leave Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-auto">
+    {/* Leave Summary */}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+      {["Pending", "Approved", "Rejected"].map((status, idx) => {
+        const count = leaves.filter((l) => l.status === status).length;
+        const colors = { Pending: "#ffd200", Approved: "#93b874", Rejected: "#ff6363" };
+        return (
           <motion.div
-            className="bg-gray-900 p-6 md:p-8 rounded-3xl w-full max-w-lg shadow-xl"
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            key={status}
+            className="p-4 sm:p-6 rounded-2xl shadow-lg"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderLeft: `6px solid ${colors[status]}`,
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.2 }}
           >
-            <h2 className="text-2xl font-bold text-[#ffd200] mb-6 text-center">
-              Apply for Leave
-            </h2>
-
-            {/* Student Info */}
-            <input
-              type="text"
-              placeholder="Name"
-              className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.name || ""}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.email || ""}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-            <select
-              className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.year || "FY"}
-              onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-            >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-
-            {/* Leave Info */}
-            <div className="flex gap-4 mb-4">
-              <input
-                type="date"
-                className="w-1/2 p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-                value={formData.fromDate || ""}
-                onChange={(e) => setFormData({ ...formData, fromDate: e.target.value })}
-              />
-              <input
-                type="date"
-                className="w-1/2 p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-                value={formData.toDate || ""}
-                onChange={(e) => setFormData({ ...formData, toDate: e.target.value })}
-              />
-            </div>
-            <select
-              className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.type || "Sick"}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-            >
-              {leaveTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Reason"
-              className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.reason || ""}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-            />
-            <select
-              className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.facultyName || "IT"} // ✅ always facultyName
-              onChange={(e) => setFormData({ ...formData, facultyName: e.target.value })}
-            >
-              {faculties.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-4">
-              <button
-                className="bg-gray-600 px-5 py-2 rounded-xl hover:bg-gray-500 transition-colors font-semibold"
-                onClick={() => setShowForm(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-[#93b874] px-5 py-2 rounded-xl hover:bg-green-600 transition-colors font-semibold"
-                onClick={handleApplyLeave}
-              >
-                Submit
-              </button>
-            </div>
+            <h3 className="text-lg sm:text-xl font-bold" style={{ color: colors[status] }}>
+              {status}
+            </h3>
+            <p className="text-xl sm:text-2xl mt-1 sm:mt-2">{count}</p>
           </motion.div>
-        </div>
-      )}
+        );
+      })}
     </div>
-  );
+
+    {/* Leave Table */}
+    <div className="overflow-x-auto rounded-xl shadow-lg mb-8 sm:mb-12">
+      <table className="min-w-full text-white bg-gray-900 rounded-xl text-sm sm:text-base">
+        <thead className="bg-gray-800">
+          <tr>
+            {["From", "To", "Type", "Year", "Faculty", "Reason", "Status", "Comment", "Action"].map(
+              (th) => (
+                <th key={th} className="py-2 px-4 sm:py-3 sm:px-6 text-left">
+                  {th}
+                </th>
+              )
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {leaves.map((leave) => (
+            <tr
+              key={leave._id}
+              className="border-b border-gray-700 hover:bg-gray-700 transition-colors"
+            >
+              <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.fromDate}</td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.toDate}</td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.type}</td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.year}</td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.facultyName}</td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.reason}</td>
+              <td
+                className="py-2 px-4 sm:py-3 sm:px-6 font-bold"
+                style={{
+                  color:
+                    leave.status === "Approved"
+                      ? "#93b874"
+                      : leave.status === "Rejected"
+                      ? "#ff6363"
+                      : "#ffd200",
+                }}
+              >
+                {leave.status}
+              </td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">
+                {leave.comment ? (
+                  <span className="italic text-gray-300">{leave.comment}</span>
+                ) : (
+                  <span className="text-gray-500">—</span>
+                )}
+              </td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">
+                <button
+                  className="bg-red-600 hover:bg-red-500 px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm"
+                  onClick={() => handleDeleteLeave(leave._id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Apply Leave Modal */}
+    {showForm && (
+      <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-auto">
+        <motion.div
+          className="bg-gray-900 p-6 md:p-8 rounded-3xl w-full max-w-md shadow-xl"
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <h2 className="text-2xl font-bold text-[#ffd200] mb-6 text-center">
+            Apply for Leave
+          </h2>
+
+          {/* Student Info */}
+          <input
+            type="text"
+            placeholder="Name"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.name || ""}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.email || ""}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          />
+          <select
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.year || "FY"}
+            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+
+          {/* Leave Info */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
+            <input
+              type="date"
+              className="w-full sm:w-1/2 p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+              value={formData.fromDate || ""}
+              onChange={(e) => setFormData({ ...formData, fromDate: e.target.value })}
+            />
+            <input
+              type="date"
+              className="w-full sm:w-1/2 p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+              value={formData.toDate || ""}
+              onChange={(e) => setFormData({ ...formData, toDate: e.target.value })}
+            />
+          </div>
+          <select
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.type || "Sick"}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+          >
+            {leaveTypes.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="Reason"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.reason || ""}
+            onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+          />
+          <select
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.facultyName || "IT"}
+            onChange={(e) => setFormData({ ...formData, facultyName: e.target.value })}
+          >
+            {faculties.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
+
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
+            <button
+              className="bg-gray-600 px-5 py-2 rounded-xl hover:bg-gray-500 transition-colors font-semibold w-full sm:w-auto"
+              onClick={() => setShowForm(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-[#93b874] px-5 py-2 rounded-xl hover:bg-green-600 transition-colors font-semibold w-full sm:w-auto"
+              onClick={handleApplyLeave}
+            >
+              Submit
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    )}
+  </div>
+);
+
 }
