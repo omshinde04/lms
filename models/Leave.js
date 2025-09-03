@@ -9,6 +9,7 @@ const LeaveSchema = new mongoose.Schema(
     type: { type: String, required: true },
     reason: { type: String, required: true },
     facultyName: { type: String, required: true },
+    teacherName: { type: String, required: true }, // ✅ New field added
     status: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" },
     comment: { type: String, default: "" }, // ✅ Optional faculty comment
   },

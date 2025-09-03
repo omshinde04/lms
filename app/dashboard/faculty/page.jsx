@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useEffect, useState } from "react";
 import { Check, X, Trash2 } from "lucide-react";
@@ -106,37 +107,35 @@ export default function FacultyDashboard() {
     groups[key].push(leave);
     return groups;
   }, {});
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
       {/* Faculty Profile */}
       {faculty && (
-  <motion.div
-    className="flex items-center gap-3 mb-8 p-4 rounded-2xl bg-gradient-to-r from-[#ffd200] to-[#ff9500] shadow-lg w-full sm:w-fit"
-    initial={{ opacity: 0, x: -40 }}
-    animate={{ opacity: 1, x: 0 }}
-  >
-    {/* Small circular avatar */}
-    <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-gray-900 text-[#ffd200] font-extrabold text-lg sm:text-xl shadow-md shrink-0">
-      {faculty.name.charAt(0).toUpperCase()}
-    </div>
+        <motion.div
+          className="flex items-center gap-3 mb-8 p-4 rounded-2xl bg-gradient-to-r from-[#ffd200] to-[#ff9500] shadow-lg w-full sm:w-fit"
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          {/* Small circular avatar */}
+          <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-gray-900 text-[#ffd200] font-extrabold text-lg sm:text-xl shadow-md shrink-0">
+            {faculty.name.charAt(0).toUpperCase()}
+          </div>
 
-    {/* Faculty info */}
-    <div className="flex flex-col">
-      <h2 className="text-base sm:text-lg font-bold text-gray-900">
-        👨‍🏫 {faculty.name}
-      </h2>
-      <p className="text-xs sm:text-sm text-gray-800">{faculty.email}</p>
-      <p className="text-xs sm:text-sm text-gray-700">
-        {faculty.department || "N/A"} • {faculty.role}
-      </p>
-    </div>
-  </motion.div>
-)}
+          {/* Faculty info */}
+          <div className="flex flex-col">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">
+              👨‍🏫 {faculty.name}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-800">{faculty.email}</p>
+            <p className="text-xs sm:text-sm text-gray-700">
+              {faculty.department || "N/A"} • {faculty.role}
+            </p>
+          </div>
+        </motion.div>
+      )}
 
-
-{/* Dynamic Pie Chart */}
-<LeaveStatsChart leaves={leaves} />
+      {/* Dynamic Pie Chart */}
+      <LeaveStatsChart leaves={leaves} />
 
       {/* Dashboard Header */}
       <motion.h1
@@ -165,12 +164,13 @@ export default function FacultyDashboard() {
                 <thead className="bg-gray-800">
                   <tr>
                     <th className="py-3 px-6 text-left">Student</th>
-                    <th className="py-3 px-6 text-left">Email</th> 
+                    <th className="py-3 px-6 text-left">Email</th>
                     <th className="py-3 px-6 text-left">Year</th>
                     <th className="py-3 px-6 text-left">Type</th>
                     <th className="py-3 px-6 text-left">Dates</th>
                     <th className="py-3 px-6 text-left">Reason</th>
                     <th className="py-3 px-6 text-left">Faculty</th>
+                    <th className="py-3 px-6 text-left">Teacher</th> 
                     <th className="py-3 px-6 text-left">Status</th>
                     <th className="py-3 px-6 text-left">Comment</th>
                     <th className="py-3 px-6 text-left">Action</th>
@@ -186,6 +186,7 @@ export default function FacultyDashboard() {
                       <td className="py-3 px-6">{leave.fromDate} → {leave.toDate}</td>
                       <td className="py-3 px-6">{leave.reason}</td>
                       <td className="py-3 px-6">{leave.facultyName}</td>
+                      <td className="py-3 px-6">{leave.teacherName}</td> 
                       <td
                         className="py-3 px-6 font-bold"
                         style={{ color: leave.status === "Approved" ? "#93b874" : leave.status === "Rejected" ? "#ff6363" : "#ffd200" }}
@@ -222,11 +223,12 @@ export default function FacultyDashboard() {
               {groupLeaves.map((leave) => (
                 <motion.div key={leave._id} className="p-4 rounded-2xl bg-gray-900 shadow-md" whileHover={{ scale: 1.02 }}>
                   <p><strong>👨‍🎓 {leave.studentId?.name}</strong> ({leave.year})</p>
-                  <p className="text-sm text-gray-300">📧 {leave.studentId?.email}</p> 
+                  <p className="text-sm text-gray-300">📧 {leave.studentId?.email}</p>
                   <p className="text-sm text-gray-300">Type: {leave.type}</p>
                   <p className="text-sm text-gray-300">{leave.fromDate} → {leave.toDate}</p>
                   <p className="text-sm text-gray-300">Reason: {leave.reason}</p>
                   <p className="text-sm text-gray-400">Faculty: {leave.facultyName}</p>
+                  <p className="text-sm text-gray-400">Teacher: {leave.teacherName}</p>
                   <p
                     className="font-bold mt-2"
                     style={{ color: leave.status === "Approved" ? "#93b874" : leave.status === "Rejected" ? "#ff6363" : "#ffd200" }}
@@ -275,7 +277,7 @@ export default function FacultyDashboard() {
             >
               <h2 className="text-2xl font-bold text-[#ffd200] mb-4">Review Leave Request</h2>
               <p className="mb-2"><strong>Student:</strong> {selectedLeave.studentId?.name}</p>
-              <p className="mb-2"><strong>Email:</strong> {selectedLeave.studentId?.email}</p> 
+              <p className="mb-2"><strong>Email:</strong> {selectedLeave.studentId?.email}</p>
               <p className="mb-4"><strong>Reason:</strong> {selectedLeave.reason}</p>
 
               <textarea
@@ -317,4 +319,5 @@ export default function FacultyDashboard() {
       </AnimatePresence>
     </div>
   );
+
 }

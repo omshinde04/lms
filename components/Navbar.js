@@ -12,9 +12,9 @@ import {
   UserPlus,
   LogOut,
   LayoutDashboard,
+  Pencil,
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
-
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -91,7 +91,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <ul className="hidden md:flex space-x-8 text-white font-medium items-center">
+        <ul className="hidden md:flex space-x-6 text-white font-medium items-center">
           {navItems.map((item) => (
             <li
               key={item.name}
@@ -126,6 +126,18 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              {/* Faculty-only Apply Leave button */}
+              {role === "faculty" && (
+                <li>
+                  <Link
+                    href="/dashboard/faculty/apply-leave"
+                    className="bg-[#ffd200] text-[#282829] px-5 py-2 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center gap-2"
+                  >
+                    <Pencil size={18} /> Apply Leave
+                  </Link>
+                </li>
+              )}
+
               <li>
                 <Link
                   href={getDashboardRoute()}
@@ -207,6 +219,19 @@ export default function Navbar() {
             </>
           ) : (
             <>
+             {/* Faculty-only Apply Leave button */}
+{role === "faculty" && (
+  <Link
+    href="/dashboard/faculty/apply-leave"
+    onClick={() => setIsOpen(false)}
+    className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
+               transition-transform duration-300 flex items-center justify-center gap-2
+               bg-[#ffd200] text-[#282829]"
+  >
+    <Pencil size={20} /> Apply
+  </Link>
+)}
+
               <Link
                 href={getDashboardRoute()}
                 onClick={() => setIsOpen(false)}

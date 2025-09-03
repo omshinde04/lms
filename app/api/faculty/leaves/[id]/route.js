@@ -66,6 +66,7 @@ export async function PATCH(req, context) {
 }
 
 // ================= DELETE: Remove Leave by ID =================
+// ================= DELETE: Remove Leave by ID =================
 export async function DELETE(req, context) {
   await connectDB();
 
@@ -87,29 +88,33 @@ export async function DELETE(req, context) {
     // ✅ Await params properly
     const params = await context.params;
     const id = params.id;
-
     if (!id) return NextResponse.json({ error: "Leave ID required" }, { status: 400 });
 
-    const deletedLeave = await Leave.findByIdAndDelete(id).populate("studentId", "name email");
-
-    if (!deletedLeave) {
+    // ✅ Fetch leave first with populated studentId
+    const leave = await Leave.findById(id).populate("studentId", "name email");
+    if (!leave) {
       return NextResponse.json({ error: "Leave not found" }, { status: 404 });
     }
 
+    // ✅ Delete it afterwards
+    await Leave.findByIdAndDelete(id);
+
     // 📧 Send Email
-    await sendEmail(
-      deletedLeave.studentId.email,
-      `Leave Request Deleted`,
-      `
-        <h2>Hello ${deletedLeave.studentId.name},</h2>
-        <p>Your leave request was <strong>deleted</strong> by ${decoded.name || "faculty"}.</p>
-        <br/>
-        <p>Regards,<br/>${decoded.name || "Faculty"}</p>
-      `
-    );
+    if (leave.studentId) {
+      await sendEmail(
+        leave.studentId.email,
+        `Leave Request Deleted`,
+        `
+          <h2>Hello ${leave.studentId.name},</h2>
+          <p>Your leave request was <strong>deleted</strong> by ${decoded.name || "faculty"}.</p>
+          <br/>
+          <p>Regards,<br/>${decoded.name || "Faculty"}</p>
+        `
+      );
+    }
 
     return NextResponse.json(
-      { message: "Leave deleted & student notified via email", deletedLeave },
+      { message: "Leave deleted & student notified via email", leave },
       { status: 200 }
     );
   } catch (err) {

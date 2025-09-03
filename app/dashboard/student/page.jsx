@@ -269,109 +269,140 @@ return (
         </tbody>
       </table>
     </div>
+{/* Apply Leave Modal */}
+{showForm && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-auto">
+    <motion.div
+      className="bg-gray-900 p-6 md:p-8 rounded-3xl w-full max-w-md shadow-xl"
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+    >
+      <h2 className="text-2xl font-bold text-[#ffd200] mb-6 text-center">
+        Apply for Leave
+      </h2>
 
-    {/* Apply Leave Modal */}
-    {showForm && (
-      <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-auto">
-        <motion.div
-          className="bg-gray-900 p-6 md:p-8 rounded-3xl w-full max-w-md shadow-xl"
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-        >
-          <h2 className="text-2xl font-bold text-[#ffd200] mb-6 text-center">
-            Apply for Leave
-          </h2>
+      {/* Student Info */}
+      <label className="block text-sm font-semibold mb-1">Name</label>
+      <input
+        type="text"
+        placeholder="Enter your name"
+        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+        value={formData.name || ""}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+      />
 
-          {/* Student Info */}
+      <label className="block text-sm font-semibold mb-1">Email</label>
+      <input
+        type="email"
+        placeholder="Enter your email"
+        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+        value={formData.email || ""}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+      />
+
+      <label className="block text-sm font-semibold mb-1">Year</label>
+      <select
+        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+        value={formData.year || "FY"}
+        onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+      >
+        {years.map((y) => (
+          <option key={y} value={y}>
+            {y}
+          </option>
+        ))}
+      </select>
+
+      {/* Leave Info */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
+        <div className="w-full sm:w-1/2">
+          <label className="block text-sm font-semibold mb-1">From</label>
           <input
-            type="text"
-            placeholder="Name"
-            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.name || ""}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            type="date"
+            className="w-full p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.fromDate || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, fromDate: e.target.value })
+            }
           />
+        </div>
+        <div className="w-full sm:w-1/2">
+          <label className="block text-sm font-semibold mb-1">To</label>
           <input
-            type="email"
-            placeholder="Email"
-            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.email || ""}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            type="date"
+            className="w-full p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.toDate || ""}
+            onChange={(e) =>
+              setFormData({ ...formData, toDate: e.target.value })
+            }
           />
-          <select
-            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.year || "FY"}
-            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-          >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-
-          {/* Leave Info */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
-            <input
-              type="date"
-              className="w-full sm:w-1/2 p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.fromDate || ""}
-              onChange={(e) => setFormData({ ...formData, fromDate: e.target.value })}
-            />
-            <input
-              type="date"
-              className="w-full sm:w-1/2 p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-              value={formData.toDate || ""}
-              onChange={(e) => setFormData({ ...formData, toDate: e.target.value })}
-            />
-          </div>
-          <select
-            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.type || "Sick"}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-          >
-            {leaveTypes.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder="Reason"
-            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.reason || ""}
-            onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-          />
-          <select
-            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.facultyName || "IT"}
-            onChange={(e) => setFormData({ ...formData, facultyName: e.target.value })}
-          >
-            {faculties.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
-
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
-            <button
-              className="bg-gray-600 px-5 py-2 rounded-xl hover:bg-gray-500 transition-colors font-semibold w-full sm:w-auto"
-              onClick={() => setShowForm(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="bg-[#93b874] px-5 py-2 rounded-xl hover:bg-green-600 transition-colors font-semibold w-full sm:w-auto"
-              onClick={handleApplyLeave}
-            >
-              Submit
-            </button>
-          </div>
-        </motion.div>
+        </div>
       </div>
-    )}
+
+      <label className="block text-sm font-semibold mb-1">Leave Type</label>
+      <select
+        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+        value={formData.type || "Sick"}
+        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+      >
+        {leaveTypes.map((t) => (
+          <option key={t} value={t}>
+            {t}
+          </option>
+        ))}
+      </select>
+
+      <label className="block text-sm font-semibold mb-1">Reason</label>
+      <input
+        type="text"
+        placeholder="Enter reason for leave"
+        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+        value={formData.reason || ""}
+        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+      />
+
+      {/* 🔹 New Teacher Name Input */}
+      <label className="block text-sm font-semibold mb-1">Teacher Name</label>
+      <input
+        type="text"
+        placeholder="Enter teacher's name"
+        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+        value={formData.teacherName || ""}
+        onChange={(e) => setFormData({ ...formData, teacherName: e.target.value })}
+      />
+
+      <label className="block text-sm font-semibold mb-1">Faculty Department</label>
+      <select
+        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+        value={formData.facultyName || "IT"}
+        onChange={(e) => setFormData({ ...formData, facultyName: e.target.value })}
+      >
+        {faculties.map((f) => (
+          <option key={f} value={f}>
+            {f}
+          </option>
+        ))}
+      </select>
+
+      {/* Buttons */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
+        <button
+          className="bg-gray-600 px-5 py-2 rounded-xl hover:bg-gray-500 transition-colors font-semibold w-full sm:w-auto"
+          onClick={() => setShowForm(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="bg-[#93b874] px-5 py-2 rounded-xl hover:bg-green-600 transition-colors font-semibold w-full sm:w-auto"
+          onClick={handleApplyLeave}
+        >
+          Submit
+        </button>
+      </div>
+    </motion.div>
+  </div>
+)}
+
   </div>
 );
 

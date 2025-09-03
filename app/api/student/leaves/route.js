@@ -21,10 +21,10 @@ export async function POST(req) {
     const studentId = decoded.userId;
 
     // 🔹 Extract request body
-    const { fromDate, toDate, type, reason, facultyName, year, certificateUrl } = await req.json();
+    const { fromDate, toDate, type, reason, facultyName, teacherName, year, certificateUrl } = await req.json();
 
     // 🔹 Validate required fields
-    if (!fromDate || !toDate || !type || !reason || !facultyName || !year) {
+    if (!fromDate || !toDate || !type || !reason || !facultyName || !teacherName || !year) {
       return NextResponse.json({ error: "All fields are required!" }, { status: 400 });
     }
 
@@ -35,7 +35,8 @@ export async function POST(req) {
       toDate,
       type,
       reason,
-      facultyName, // ✅ Correct key
+      facultyName,
+      teacherName, // ✅ Added new field
       year,
     });
 
