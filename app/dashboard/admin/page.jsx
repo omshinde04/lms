@@ -263,38 +263,39 @@ const renderLeaveTable = () => (
       </tbody>
     </table>
 
-    {/* Mobile Card View */}
-    <div className="grid md:hidden gap-4">
-      {filteredLeaves.map((leave) => (
-        <div
-          key={leave._id}
-          className="bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-xl p-4 shadow-lg border border-gray-700"
+ {/* Mobile Card View */}
+<div className="grid md:hidden gap-4">
+  {filteredLeaves.map((leave) => (
+    <div
+      key={leave._id}
+      className="bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-xl p-4 shadow-lg border border-gray-700"
+    >
+      <p><span className="font-bold text-blue-400">Faculty Name:</span> {leave.facultyName || leave.facultyId?.name || "N/A"}</p>
+      <p><span className="font-bold text-blue-400">Email:</span> {leave.facultyId?.email || "N/A"}</p>
+      <p><span className="font-bold text-blue-400">Dept:</span> {leave.department || "N/A"}</p>
+      <p><span className="font-bold text-blue-400">Type:</span> {leave.type}</p>
+      <p><span className="font-bold text-blue-400">From:</span> {leave.fromDate}</p>
+      <p><span className="font-bold text-blue-400">To:</span> {leave.toDate}</p>
+      <p><span className="font-bold text-blue-400">Reason:</span> {leave.reason}</p>
+      <p className="font-bold text-yellow-300">Status: {leave.status}</p>
+      <div className="mt-3 flex gap-2 justify-end">
+        <button
+          onClick={() => handleLeaveAction(leave._id, "Approved")}
+          className="bg-green-600 px-3 py-1 rounded-lg hover:bg-green-500"
         >
-          <p><span className="font-bold text-blue-400">Name:</span> {leave.facultyId?.name || "N/A"}</p>
-          <p><span className="font-bold text-blue-400">Email:</span> {leave.facultyId?.email || "N/A"}</p>
-          <p><span className="font-bold text-blue-400">Dept:</span> {leave.department || "N/A"}</p>
-          <p><span className="font-bold text-blue-400">Type:</span> {leave.type}</p>
-          <p><span className="font-bold text-blue-400">From:</span> {leave.fromDate}</p>
-          <p><span className="font-bold text-blue-400">To:</span> {leave.toDate}</p>
-          <p><span className="font-bold text-blue-400">Reason:</span> {leave.reason}</p>
-          <p className="font-bold text-yellow-300">Status: {leave.status}</p>
-          <div className="mt-3 flex gap-2 justify-end">
-            <button
-              onClick={() => handleLeaveAction(leave._id, "Approved")}
-              className="bg-green-600 px-3 py-1 rounded-lg hover:bg-green-500"
-            >
-              Approve
-            </button>
-            <button
-              onClick={() => handleLeaveAction(leave._id, "Rejected")}
-              className="bg-red-600 px-3 py-1 rounded-lg hover:bg-red-500"
-            >
-              Reject
-            </button>
-          </div>
-        </div>
-      ))}
+          Approve
+        </button>
+        <button
+          onClick={() => handleLeaveAction(leave._id, "Rejected")}
+          className="bg-red-600 px-3 py-1 rounded-lg hover:bg-red-500"
+        >
+          Reject
+        </button>
+      </div>
     </div>
+  ))}
+</div>
+
   </div>
 );
 
