@@ -1,6 +1,6 @@
 {
-  "name": "Leave Management System",
-  "short_name": "LeaveApp",
+  "name": "LeaveDesk",
+  "short_name": "LeaveDesk",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
