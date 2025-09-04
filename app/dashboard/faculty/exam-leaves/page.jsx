@@ -31,7 +31,11 @@ export default function FacultyExamLeaves() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      if (res.ok) setExamLeaves(data.examLeaves || []);
+
+      // ✅ Handle both wrapped and direct array responses
+      if (res.ok) {
+        setExamLeaves(Array.isArray(data) ? data : data.examLeaves || []);
+      }
     } catch (err) {
       console.error("Error fetching exam leaves:", err);
     } finally {
@@ -105,7 +109,7 @@ export default function FacultyExamLeaves() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white px-4 sm:px-6 pt-24 sm:pt-28 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white px-3 sm:px-6 pt-24 sm:pt-28 pb-20">
       {/* Faculty Profile */}
       {faculty && (
         <motion.div
@@ -128,7 +132,7 @@ export default function FacultyExamLeaves() {
 
       {/* Header */}
       <motion.h1
-        className="text-3xl sm:text-4xl font-extrabold text-center text-[#ffd200] mb-10 drop-shadow-md"
+        className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-[#ffd200] mb-10 drop-shadow-md"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -150,7 +154,10 @@ export default function FacultyExamLeaves() {
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="flex-1 space-y-2">
-                <p className="font-semibold text-lg">👨‍🎓 {leave.studentId?.name} <span className="text-sm text-gray-400">({leave.year})</span></p>
+                <p className="font-semibold text-lg">
+                  👨‍🎓 {leave.studentId?.name}{" "}
+                  <span className="text-sm text-gray-400">({leave.year})</span>
+                </p>
                 <p className="text-sm text-gray-300">📧 {leave.studentId?.email}</p>
                 <p className="text-sm text-gray-300">Dept: {leave.department}</p>
                 <p className="text-sm text-gray-300">Teacher: {leave.teacher}</p>
@@ -172,9 +179,7 @@ export default function FacultyExamLeaves() {
                 ) : (
                   <span
                     className={`flex-1 px-4 py-2 rounded-xl text-center font-bold ${
-                      leave.status === "Approved"
-                        ? "bg-green-600"
-                        : "bg-red-600"
+                      leave.status === "Approved" ? "bg-green-600" : "bg-red-600"
                     }`}
                   >
                     {leave.status}
