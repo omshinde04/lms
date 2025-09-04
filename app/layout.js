@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/Navbar"; // 👈 Import Navbar component
-import Footer from "../components/Footer"; // 👈 Import Footer component
+import Navbar from "../components/Navbar"; 
+import Footer from "../components/Footer"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,12 +18,15 @@ export const metadata = {
   description: "Leave management system for students, faculty, and HOD",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icons/icon-192x192.png",
-    apple: "/icons/icon-512x512.png",
+    icon: "/icons/icon1.png", // Default app icon
+    apple: [
+      { url: "/icons/icon1.png", sizes: "180x180", type: "image/png" }, // iOS
+      { url: "/icons/icon1.png", sizes: "192x192", type: "image/png" }, // Android
+      { url: "/icons/icon1.png", sizes: "512x512", type: "image/png" }, // Splash screen
+    ],
   },
 };
 
-// ✅ Move themeColor here instead
 export const viewport = {
   themeColor: "#0d6efd",
 };
@@ -32,13 +35,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Fallback for browsers that don’t fully support Next.js metadata */}
+        {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0d6efd" />
+
+        {/* iOS specific */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon1.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon1.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon1.png" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {/* Global Navbar */}
         <Navbar />
 
