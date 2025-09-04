@@ -105,19 +105,19 @@ export default function FacultyExamLeaves() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white px-4 sm:px-6 pt-24 sm:pt-28 pb-20">
       {/* Faculty Profile */}
       {faculty && (
         <motion.div
-          className="flex items-center gap-3 mb-8 p-4 rounded-2xl bg-gradient-to-r from-[#ffd200] to-[#ff9500] shadow-lg w-full sm:w-fit"
+          className="flex items-center gap-3 mb-10 p-5 rounded-2xl bg-gradient-to-r from-[#ffd200] to-[#ff9500] shadow-xl w-full sm:w-fit mx-auto"
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-900 text-[#ffd200] font-extrabold text-lg">
+          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-900 text-[#ffd200] font-extrabold text-xl shadow-lg">
             {faculty.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900">👨‍🏫 {faculty.name}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">👨‍🏫 {faculty.name}</h2>
             <p className="text-xs sm:text-sm text-gray-800">{faculty.email}</p>
             <p className="text-xs sm:text-sm text-gray-700">
               {faculty.department || "N/A"} • {faculty.role}
@@ -128,7 +128,7 @@ export default function FacultyExamLeaves() {
 
       {/* Header */}
       <motion.h1
-        className="text-3xl sm:text-4xl font-extrabold text-center text-[#ffd200] mb-10"
+        className="text-3xl sm:text-4xl font-extrabold text-center text-[#ffd200] mb-10 drop-shadow-md"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -141,16 +141,16 @@ export default function FacultyExamLeaves() {
       ) : examLeaves.length === 0 ? (
         <p className="text-center text-gray-400">No exam leave requests yet.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {examLeaves.map((leave) => (
             <motion.div
               key={leave._id}
-              className="p-4 rounded-xl bg-gray-900 shadow-md flex flex-col sm:flex-row justify-between gap-3"
+              className="p-5 rounded-2xl bg-gray-900 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="flex-1">
-                <p className="font-semibold">👨‍🎓 {leave.studentId?.name} ({leave.year})</p>
+              <div className="flex-1 space-y-2">
+                <p className="font-semibold text-lg">👨‍🎓 {leave.studentId?.name} <span className="text-sm text-gray-400">({leave.year})</span></p>
                 <p className="text-sm text-gray-300">📧 {leave.studentId?.email}</p>
                 <p className="text-sm text-gray-300">Dept: {leave.department}</p>
                 <p className="text-sm text-gray-300">Teacher: {leave.teacher}</p>
@@ -158,20 +158,20 @@ export default function FacultyExamLeaves() {
                   {formatDate(leave.fromDate)} → {formatDate(leave.toDate)}
                 </p>
                 <p className="text-sm text-gray-400">Reason: {leave.reason}</p>
-                <p className="italic text-gray-400">{leave.comment || "—"}</p>
+                <p className="italic text-gray-500">{leave.comment || "—"}</p>
               </div>
 
-              <div className="flex flex-col gap-2 sm:w-40">
+              <div className="mt-4 flex flex-col sm:flex-row gap-2">
                 {leave.status === "Pending" ? (
                   <button
-                    className="bg-[#ffd200] hover:bg-yellow-500 text-black px-3 py-2 rounded-lg font-semibold flex items-center gap-1"
+                    className="flex-1 bg-[#ffd200] hover:bg-yellow-500 text-black px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
                     onClick={() => setSelectedLeave(leave)}
                   >
-                    <Check size={16} /> Review
+                    <Check size={18} /> Review
                   </button>
                 ) : (
                   <span
-                    className={`px-3 py-2 rounded-lg text-center font-bold ${
+                    className={`flex-1 px-4 py-2 rounded-xl text-center font-bold ${
                       leave.status === "Approved"
                         ? "bg-green-600"
                         : "bg-red-600"
@@ -181,10 +181,10 @@ export default function FacultyExamLeaves() {
                   </span>
                 )}
                 <button
-                  className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg font-semibold flex items-center gap-1"
+                  className="flex-1 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
                   onClick={() => handleDelete(leave._id)}
                 >
-                  <Trash2 size={16} /> Delete
+                  <Trash2 size={18} /> Delete
                 </button>
               </div>
             </motion.div>
@@ -202,7 +202,7 @@ export default function FacultyExamLeaves() {
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-gray-900 p-6 rounded-3xl shadow-xl w-full max-w-md text-white"
+              className="bg-gray-900 p-6 rounded-3xl shadow-2xl w-full max-w-md text-white"
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
@@ -216,25 +216,26 @@ export default function FacultyExamLeaves() {
                 placeholder="Add comment (optional)"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white text-black mb-4 focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+                className="w-full p-3 rounded-xl bg-white text-black mb-4 focus:outline-none focus:ring-2 focus:ring-[#ffd200] resize-none"
+                rows={3}
               />
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => handleAction(selectedLeave._id, "Approved")}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
                 >
                   <Check size={18} /> Approve
                 </button>
                 <button
                   onClick={() => handleAction(selectedLeave._id, "Rejected")}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
                 >
                   <X size={18} /> Reject
                 </button>
                 <button
                   onClick={() => setSelectedLeave(null)}
-                  className="flex-1 px-4 py-2 border border-gray-500 rounded-xl font-semibold hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 border border-gray-600 rounded-xl font-semibold hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>
