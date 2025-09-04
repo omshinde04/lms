@@ -7,7 +7,7 @@
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#0d6efd",
-  "description": "Leave management system for students, faculty, and HOD",
+  "description": "LeaveDesk - smart leave  management system for students, faculty, and HOD",
   "icons": [
     {
       "src": "/icons/icon1.png",

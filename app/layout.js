@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "LeaveDesk",
-  description: "Leave management system for students, faculty, and HOD",
+  description: "LeaveDesk - Smart leave management for students, faculty, and HOD",
   manifest: "/manifest.json",
   icons: {
     icon: "/icons/icon1.png", // Default app icon
@@ -43,6 +43,11 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon1.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon1.png" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon1.png" />
+
+        {/* ✅ iOS app name */}
+        <meta name="apple-mobile-web-app-title" content="LeaveDesk" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {/* Global Navbar */}
