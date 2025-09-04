@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Leave Management System",
+  title: "LeaveDesk",
   description: "Leave management system for students, faculty, and HOD",
   manifest: "/manifest.json",
   icons: {
