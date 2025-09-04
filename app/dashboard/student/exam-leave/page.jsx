@@ -48,7 +48,7 @@ export default function ExamLeavePage() {
 
     const fetchRequests = async () => {
       try {
-        const res = await fetch("/api/student/exam-leave", {
+        const res = await fetch("/api/student/apply-exam-leaves", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -74,7 +74,7 @@ export default function ExamLeavePage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("/api/student/exam-leave", {
+      const res = await fetch("/api/student/apply-exam-leaves", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export default function ExamLeavePage() {
         }));
 
         // Refresh exam leaves
-        const refreshed = await fetch("/api/student/exam-leave", {
+        const refreshed = await fetch("/api/student/apply-exam-leaves", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (refreshed.ok) {

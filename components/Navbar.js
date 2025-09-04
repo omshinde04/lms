@@ -24,7 +24,7 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState(null);
 
-  // 🔹 Detect scroll for shrink effect
+  // Detect scroll for shrink effect
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -40,22 +40,14 @@ export default function Navbar() {
 
     try {
       const decoded = jwtDecode(token);
-
-      // ✅ Check expiry
       if (decoded.exp * 1000 < Date.now()) {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
         return;
       }
-
       setIsAuthenticated(true);
-
-      // ✅ Normalize role to lowercase
-      setRole((decoded.role || "student").toLowerCase());
-
-      console.log("Decoded role:", decoded.role); // 👀 Debugging log
-    } catch (err) {
-      console.error("JWT decode error:", err);
+      setRole(decoded.role || "student");
+    } catch {
       localStorage.removeItem("token");
       setIsAuthenticated(false);
     }
@@ -143,7 +135,7 @@ export default function Navbar() {
                     href="/dashboard/student/exam-leave"
                     className="bg-[#ffd200] text-[#282829] px-5 py-2 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center gap-2"
                   >
-                    <FileText size={18} /> Apply Exam Leave
+                    <FileText size={18} /> Exam Leave
                   </Link>
                 </li>
               )}
@@ -207,12 +199,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Fullscreen overlay */}
       <div
         className={`fixed top-0 left-0 h-screen w-screen bg-gradient-to-br from-[#93b874] via-[#444f45] to-[#ffd200] text-white transform transition-transform duration-500 ease-in-out z-40 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        {/* Close button inside fullscreen menu */}
         <button
           onClick={() => setIsOpen(false)}
           className="absolute top-6 right-6 text-white"
@@ -255,11 +248,13 @@ export default function Navbar() {
               {/* Student-only Apply Exam Leave button */}
               {role === "student" && (
                 <Link
-                  href="/dashboard/student/exam-leave"
+                  href="/dashboard/student/exam-leave" // ✅ fixed path
                   onClick={() => setIsOpen(false)}
-                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 bg-[#ffd200] text-[#282829]"
+                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
+                             transition-transform duration-300 flex items-center justify-center gap-2
+                             bg-[#ffd200] text-[#282829]"
                 >
-                  <FileText size={20} /> Apply Exam Leave
+                  <FileText size={20} />  Exam Leave
                 </Link>
               )}
 
@@ -268,7 +263,9 @@ export default function Navbar() {
                 <Link
                   href="/dashboard/faculty/apply-leave"
                   onClick={() => setIsOpen(false)}
-                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 bg-[#ffd200] text-[#282829]"
+                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
+                             transition-transform duration-300 flex items-center justify-center gap-2
+                             bg-[#ffd200] text-[#282829]"
                 >
                   <Pencil size={20} /> Apply Leave
                 </Link>
@@ -279,7 +276,9 @@ export default function Navbar() {
                 <Link
                   href="/dashboard/faculty/exam-leaves"
                   onClick={() => setIsOpen(false)}
-                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 bg-[#ffd200] text-[#282829]"
+                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
+                             transition-transform duration-300 flex items-center justify-center gap-2
+                             bg-[#ffd200] text-[#282829]"
                 >
                   <BookOpen size={20} /> Exam Leaves
                 </Link>
