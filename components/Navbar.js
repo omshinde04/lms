@@ -13,6 +13,8 @@ import {
   LogOut,
   LayoutDashboard,
   Pencil,
+  FileText,
+  BookOpen,
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 
@@ -126,6 +128,18 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              {/* Student-only Apply Exam Leave button */}
+              {role === "student" && (
+                <li>
+                  <Link
+                    href="/dashboard/student/exam-leave"
+                    className="bg-[#ffd200] text-[#282829] px-5 py-2 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center gap-2"
+                  >
+                    <FileText size={18} /> Apply Exam Leave
+                  </Link>
+                </li>
+              )}
+
               {/* Faculty-only Apply Leave button */}
               {role === "faculty" && (
                 <li>
@@ -134,6 +148,18 @@ export default function Navbar() {
                     className="bg-[#ffd200] text-[#282829] px-5 py-2 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center gap-2"
                   >
                     <Pencil size={18} /> Apply Leave
+                  </Link>
+                </li>
+              )}
+
+              {/* Faculty-only Exam Leaves button */}
+              {role === "faculty" && (
+                <li>
+                  <Link
+                    href="/dashboard/faculty/exam-leaves"
+                    className="bg-[#ffd200] text-[#282829] px-5 py-2 rounded-lg font-semibold shadow-md hover:scale-105 transition-transform duration-300 flex items-center gap-2"
+                  >
+                    <BookOpen size={18} /> Exam Leaves
                   </Link>
                 </li>
               )}
@@ -219,18 +245,44 @@ export default function Navbar() {
             </>
           ) : (
             <>
-             {/* Faculty-only Apply Leave button */}
-{role === "faculty" && (
-  <Link
-    href="/dashboard/faculty/apply-leave"
-    onClick={() => setIsOpen(false)}
-    className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
-               transition-transform duration-300 flex items-center justify-center gap-2
-               bg-[#ffd200] text-[#282829]"
-  >
-    <Pencil size={20} /> Apply
-  </Link>
-)}
+              {/* Student-only Apply Exam Leave button */}
+              {role === "student" && (
+                <Link
+                  href="/dashboard/student/exam-leave" // ✅ fixed path
+                  onClick={() => setIsOpen(false)}
+                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
+                             transition-transform duration-300 flex items-center justify-center gap-2
+                             bg-[#ffd200] text-[#282829]"
+                >
+                  <FileText size={20} /> Apply Exam Leave
+                </Link>
+              )}
+
+              {/* Faculty-only Apply Leave button */}
+              {role === "faculty" && (
+                <Link
+                  href="/dashboard/faculty/apply-leave"
+                  onClick={() => setIsOpen(false)}
+                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
+                             transition-transform duration-300 flex items-center justify-center gap-2
+                             bg-[#ffd200] text-[#282829]"
+                >
+                  <Pencil size={20} /> Apply Leave
+                </Link>
+              )}
+
+              {/* Faculty-only Exam Leaves button */}
+              {role === "faculty" && (
+                <Link
+                  href="/dashboard/faculty/exam-leaves"
+                  onClick={() => setIsOpen(false)}
+                  className="w-48 px-6 py-3 rounded-lg font-semibold shadow-md hover:scale-105 
+                             transition-transform duration-300 flex items-center justify-center gap-2
+                             bg-[#ffd200] text-[#282829]"
+                >
+                  <BookOpen size={20} /> Exam Leaves
+                </Link>
+              )}
 
               <Link
                 href={getDashboardRoute()}
