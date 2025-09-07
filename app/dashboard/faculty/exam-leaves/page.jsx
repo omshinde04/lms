@@ -5,9 +5,6 @@ import { Check, X, Trash2, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
-
-
-
 export default function FacultyExamLeaves() {
   const [faculty, setFaculty] = useState(null);
   const [examLeaves, setExamLeaves] = useState([]);
@@ -90,33 +87,92 @@ export default function FacultyExamLeaves() {
     });
   };
 
-  // 🔹 Group leaves by Year → Department
-  const groupByYearAndDept = (leaves) => {
-    return leaves.reduce((groups, leave) => {
-      const year = leave.year || "Unknown Year";
+  // 🔹 Group leaves by department then year
+  const groupByDepartmentAndYear = (leaves) => {
+    return leaves.reduce((departments, leave) => {
       const dept = leave.department || "Unknown Dept";
-      if (!groups[year]) groups[year] = {};
-      if (!groups[year][dept]) groups[year][dept] = [];
-      groups[year][dept].push(leave);
-      return groups;
+      const year = leave.year || "Unknown Year";
+
+      if (!departments[dept]) departments[dept] = {};
+      if (!departments[dept][year]) departments[dept][year] = [];
+
+      departments[dept][year].push(leave);
+      return departments;
     }, {});
   };
 
-  const groupedLeaves = groupByYearAndDept(examLeaves);
+  const groupedLeaves = groupByDepartmentAndYear(examLeaves);
+
+  // 🔹 Approve / Reject Exam Leave
+  const handleAction = async (id, status) => {
+    if (!id) return;
+    try {
+      const res = await fetch(`/api/faculty/exam-leaves/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status, comment }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(`✅ Exam leave ${status.toLowerCase()} successfully`);
+        setExamLeaves((prev) =>
+          prev.map((leave) => (leave._id === id ? data.examLeave : leave))
+        );
+        setSelectedLeave(null);
+        setComment("");
+      } else {
+        alert(`⚠️ ${data.error || "Failed to update leave"}`);
+      }
+    } catch (err) {
+      console.error("Error updating exam leave:", err);
+      alert("⚠️ Something went wrong");
+    }
+  };
+
+  // 🔹 Delete Exam Leave
+  const handleDelete = async (id) => {
+    if (!id) return;
+    const confirmDelete = confirm("Are you sure you want to delete this exam leave?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/faculty/exam-leaves/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("🗑️ Exam leave deleted successfully");
+        setExamLeaves((prev) => prev.filter((leave) => leave._id !== id));
+      } else {
+        alert(`⚠️ ${data.error || "Failed to delete leave"}`);
+      }
+    } catch (err) {
+      console.error("Error deleting exam leave:", err);
+      alert("⚠️ Something went wrong");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white px-3 sm:px-6 pt-24 sm:pt-28 pb-20">
       {/* Faculty Profile */}
       {faculty && (
         <motion.div
-          className="flex items-center gap-3 mb-10 p-5 rounded-2xl bg-gradient-to-r from-[#ffd200] to-[#ff9500] shadow-xl w-full sm:w-fit mx-auto"
+          className="flex flex-col sm:flex-row items-center gap-3 mb-10 p-5 rounded-2xl bg-gradient-to-r from-[#ffd200] to-[#ff9500] shadow-xl w-full sm:w-fit mx-auto"
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
         >
           <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-900 text-[#ffd200] font-extrabold text-xl shadow-lg">
             {faculty.name.charAt(0).toUpperCase()}
           </div>
-          <div>
+          <div className="text-center sm:text-left">
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">
               👨‍🏫 {faculty.name}
             </h2>
@@ -125,11 +181,6 @@ export default function FacultyExamLeaves() {
           </div>
         </motion.div>
       )}
-
-
-
-
-
 
       {/* Header + Export Button */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-10">
@@ -156,23 +207,20 @@ export default function FacultyExamLeaves() {
       ) : examLeaves.length === 0 ? (
         <p className="text-center text-gray-400">No exam leave requests yet.</p>
       ) : (
-        Object.keys(groupedLeaves).map((year) => (
-          <div key={year} className="mb-12">
-            {/* Year Heading */}
-            <h2 className="text-2xl font-bold text-[#ffd200] mb-6 border-b border-gray-700 pb-2">
-              📘 {year}
+        Object.keys(groupedLeaves).map((dept) => (
+          <div key={dept} className="mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#ffd200] mb-6 border-b border-gray-700 pb-2">
+              🏢 {dept}
             </h2>
 
-            {/* Departments inside Year */}
-            {Object.keys(groupedLeaves[year]).map((dept) => (
-              <div key={dept} className="mb-8">
-                <h3 className="text-lg font-semibold text-[#ff9500] mb-4">
-                  🏢 {dept}
+            {Object.keys(groupedLeaves[dept]).map((year) => (
+              <div key={year} className="mb-8">
+                <h3 className="text-xl sm:text-2xl font-semibold text-[#ffd200] mb-4 border-b border-gray-700 pb-1">
+                  📘 {year}
                 </h3>
 
-                {/* ✅ Cards in Grid */}
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {groupedLeaves[year][dept].map((leave) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {groupedLeaves[dept][year].map((leave) => (
                     <motion.div
                       key={leave._id}
                       className="p-5 rounded-2xl bg-gray-900 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
@@ -190,15 +238,15 @@ export default function FacultyExamLeaves() {
                           📧 {leave.studentId?.email}
                         </p>
                         <p className="text-sm text-gray-300">
+                          Dept: {leave.department}
+                        </p>
+                        <p className="text-sm text-gray-300">
                           Teacher: {leave.teacher}
                         </p>
                         <p className="text-sm text-gray-300">
-                          {formatDate(leave.fromDate)} →{" "}
-                          {formatDate(leave.toDate)}
+                          {formatDate(leave.fromDate)} → {formatDate(leave.toDate)}
                         </p>
-                        <p className="text-sm text-gray-400">
-                          Reason: {leave.reason}
-                        </p>
+                        <p className="text-sm text-gray-400">Reason: {leave.reason}</p>
                         <p className="italic text-gray-500">
                           {leave.comment || "—"}
                         </p>

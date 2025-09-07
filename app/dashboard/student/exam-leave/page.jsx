@@ -274,8 +274,22 @@ export default function ExamLeavePage() {
                 <div className="w-full">
                   <p className="font-semibold">Teacher: {req.teacher}</p>
                   <p className="text-sm text-gray-400">
-  {new Date(req.fromDate).toLocaleDateString()} → {new Date(req.toDate).toLocaleDateString()}
-</p>
+                    {new Date(req.fromDate).toLocaleDateString()} → {new Date(req.toDate).toLocaleDateString()}
+                  </p>
+
+
+
+  <p className="text-sm text-gray-400">Department: {req.department}</p>
+                  {req.department && (
+                    <p className="text-sm text-gray-300 mt-1">
+                    </p>
+                  )}
+
+  <p className="text-sm text-gray-400">Year: {req.year}</p>
+                  {req.year && (
+                    <p className="text-sm text-gray-300 mt-1">
+                    </p>
+                  )}
 
                   <p className="text-sm text-gray-400">Reason: {req.reason}</p>
                   {req.comment && (
@@ -284,15 +298,17 @@ export default function ExamLeavePage() {
                       <span className="italic">{req.comment}</span>
                     </p>
                   )}
+
+
+
                 </div>
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    req.status === "Pending"
+                  className={`px-3 py-1 rounded-full text-sm font-bold ${req.status === "Pending"
                       ? "bg-yellow-500 text-black"
                       : req.status === "Approved"
-                      ? "bg-green-500 text-black"
-                      : "bg-red-500 text-white"
-                  }`}
+                        ? "bg-green-500 text-black"
+                        : "bg-red-500 text-white"
+                    }`}
                 >
                   {req.status}
                 </span>
