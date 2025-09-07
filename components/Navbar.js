@@ -89,7 +89,7 @@ export default function Navbar() {
           href="/"
           className="text-white font-extrabold text-2xl tracking-wide"
         >
-          LMS
+          LeaveDesk
         </Link>
 
         {/* Desktop Menu */}

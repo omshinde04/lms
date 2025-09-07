@@ -1,9 +1,20 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Facebook, Twitter, Instagram, Linkedin, Mail } from "lucide-react";
 
 export default function Footer() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Example: check if token exists in localStorage (you can change based on your auth method)
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   return (
     <footer className="bg-[#444f45] text-[#e5eddf] py-12">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10">
@@ -54,26 +65,34 @@ export default function Footer() {
         </motion.div>
 
         {/* Account */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.1 }}
-        >
-          <h2 className="text-lg font-semibold mb-4 text-white">Account</h2>
-          <ul className="space-y-3 text-sm">
-            <li>
-              <Link href="/signin" className="hover:text-[#93b874] transition">
-                Sign In
-              </Link>
-            </li>
-            <li>
-              <Link href="/login" className="hover:text-[#93b874] transition">
-                Login
-              </Link>
-            </li>
-          </ul>
-        </motion.div>
+        {!isLoggedIn && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.1 }}
+          >
+            <h2 className="text-lg font-semibold mb-4 text-white">Account</h2>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link
+                  href="/signin"
+                  className="hover:text-[#93b874] transition"
+                >
+                  Sign In
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/login"
+                  className="hover:text-[#93b874] transition"
+                >
+                  Login
+                </Link>
+              </li>
+            </ul>
+          </motion.div>
+        )}
 
         {/* Newsletter */}
         <motion.div

@@ -155,7 +155,7 @@ const exportToExcel = () => {
             </h2>
             <p className="text-xs sm:text-sm text-gray-800">{faculty.email}</p>
             <p className="text-xs sm:text-sm text-gray-700">
-              {faculty.department || "N/A"} • {faculty.role}
+              {faculty.role}
             </p>
           </div>
         </motion.div>

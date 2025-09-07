@@ -1,7 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Trash2, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
+
+
 
 export default function FacultyExamLeaves() {
   const [faculty, setFaculty] = useState(null);
@@ -31,8 +36,6 @@ export default function FacultyExamLeaves() {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-
-      // ✅ Handle both wrapped and direct array responses
       if (res.ok) {
         setExamLeaves(Array.isArray(data) ? data : data.examLeaves || []);
       }
@@ -48,54 +51,33 @@ export default function FacultyExamLeaves() {
     fetchExamLeaves();
   }, []);
 
-  // ✅ Approve / Reject Exam Leave
-  const handleAction = async (id, status) => {
-    try {
-      const res = await fetch(`/api/faculty/exam-leaves/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ status, comment }),
-      });
-
-      if (res.ok) {
-        alert(`Exam Leave ${status} successfully ✅`);
-        setComment("");
-        setSelectedLeave(null);
-        fetchExamLeaves();
-      } else {
-        alert("❌ Failed to update exam leave");
-      }
-    } catch (err) {
-      console.error("Error updating exam leave:", err);
-      alert("⚠️ Something went wrong while updating");
+  // 🔹 Export to Excel
+  const exportToExcel = () => {
+    if (examLeaves.length === 0) {
+      alert("⚠️ No exam leaves to export");
+      return;
     }
-  };
 
-  // ✅ Delete Exam Leave
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this exam leave request?")) return;
+    const sheetData = examLeaves.map((leave) => ({
+      Student: leave.studentId?.name,
+      Email: leave.studentId?.email,
+      Department: leave.department,
+      Teacher: leave.teacher,
+      Year: leave.year,
+      FromDate: leave.fromDate,
+      ToDate: leave.toDate,
+      Reason: leave.reason,
+      Status: leave.status,
+      Comment: leave.comment || "",
+    }));
 
-    try {
-      const res = await fetch(`/api/faculty/exam-leaves/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+    const worksheet = XLSX.utils.json_to_sheet(sheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "ExamLeaves");
 
-      if (res.ok) {
-        alert("✅ Exam Leave deleted successfully");
-        setSelectedLeave(null);
-        fetchExamLeaves();
-      } else {
-        const data = await res.json();
-        alert(`❌ Failed: ${data.error}`);
-      }
-    } catch (err) {
-      console.error("Error deleting exam leave:", err);
-      alert("⚠️ Something went wrong while deleting");
-    }
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "ExamLeaves_Report.xlsx");
   };
 
   // 🔹 Helper to format date
@@ -107,6 +89,20 @@ export default function FacultyExamLeaves() {
       year: "numeric",
     });
   };
+
+  // 🔹 Group leaves by Year → Department
+  const groupByYearAndDept = (leaves) => {
+    return leaves.reduce((groups, leave) => {
+      const year = leave.year || "Unknown Year";
+      const dept = leave.department || "Unknown Dept";
+      if (!groups[year]) groups[year] = {};
+      if (!groups[year][dept]) groups[year][dept] = [];
+      groups[year][dept].push(leave);
+      return groups;
+    }, {});
+  };
+
+  const groupedLeaves = groupByYearAndDept(examLeaves);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white px-3 sm:px-6 pt-24 sm:pt-28 pb-20">
@@ -121,83 +117,129 @@ export default function FacultyExamLeaves() {
             {faculty.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900">👨‍🏫 {faculty.name}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+              👨‍🏫 {faculty.name}
+            </h2>
             <p className="text-xs sm:text-sm text-gray-800">{faculty.email}</p>
-            <p className="text-xs sm:text-sm text-gray-700">
-              {faculty.department || "N/A"} • {faculty.role}
-            </p>
+            <p className="text-xs sm:text-sm text-gray-700">{faculty.role}</p>
           </div>
         </motion.div>
       )}
 
-      {/* Header */}
-      <motion.h1
-        className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-[#ffd200] mb-10 drop-shadow-md"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        🎓 Manage Exam Leave Requests
-      </motion.h1>
+
+
+
+
+
+      {/* Header + Export Button */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-10">
+        <motion.h1
+          className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-[#ffd200] drop-shadow-md"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          🎓 Manage Exam Leave Requests
+        </motion.h1>
+        <button
+          onClick={exportToExcel}
+          className="mt-4 sm:mt-0 flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-xl font-semibold transition-transform hover:scale-105"
+        >
+          <FileSpreadsheet size={18} /> Export to Excel
+        </button>
+      </div>
 
       {/* Loading / Empty */}
       {loading ? (
-        <p className="text-center text-lg animate-pulse">Loading exam leave requests...</p>
+        <p className="text-center text-lg animate-pulse">
+          Loading exam leave requests...
+        </p>
       ) : examLeaves.length === 0 ? (
         <p className="text-center text-gray-400">No exam leave requests yet.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {examLeaves.map((leave) => (
-            <motion.div
-              key={leave._id}
-              className="p-5 rounded-2xl bg-gray-900 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="flex-1 space-y-2">
-                <p className="font-semibold text-lg">
-                  👨‍🎓 {leave.studentId?.name}{" "}
-                  <span className="text-sm text-gray-400">({leave.year})</span>
-                </p>
-                <p className="text-sm text-gray-300">📧 {leave.studentId?.email}</p>
-                <p className="text-sm text-gray-300">Dept: {leave.department}</p>
-                <p className="text-sm text-gray-300">Teacher: {leave.teacher}</p>
-                <p className="text-sm text-gray-300">
-                  {formatDate(leave.fromDate)} → {formatDate(leave.toDate)}
-                </p>
-                <p className="text-sm text-gray-400">Reason: {leave.reason}</p>
-                <p className="italic text-gray-500">{leave.comment || "—"}</p>
-              </div>
+        Object.keys(groupedLeaves).map((year) => (
+          <div key={year} className="mb-12">
+            {/* Year Heading */}
+            <h2 className="text-2xl font-bold text-[#ffd200] mb-6 border-b border-gray-700 pb-2">
+              📘 {year}
+            </h2>
 
-              <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                {leave.status === "Pending" ? (
-                  <button
-                    className="flex-1 bg-[#ffd200] hover:bg-yellow-500 text-black px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
-                    onClick={() => setSelectedLeave(leave)}
-                  >
-                    <Check size={18} /> Review
-                  </button>
-                ) : (
-                  <span
-                    className={`flex-1 px-4 py-2 rounded-xl text-center font-bold ${
-                      leave.status === "Approved" ? "bg-green-600" : "bg-red-600"
-                    }`}
-                  >
-                    {leave.status}
-                  </span>
-                )}
-                <button
-                  className="flex-1 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
-                  onClick={() => handleDelete(leave._id)}
-                >
-                  <Trash2 size={18} /> Delete
-                </button>
+            {/* Departments inside Year */}
+            {Object.keys(groupedLeaves[year]).map((dept) => (
+              <div key={dept} className="mb-8">
+                <h3 className="text-lg font-semibold text-[#ff9500] mb-4">
+                  🏢 {dept}
+                </h3>
+
+                {/* ✅ Cards in Grid */}
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {groupedLeaves[year][dept].map((leave) => (
+                    <motion.div
+                      key={leave._id}
+                      className="p-5 rounded-2xl bg-gray-900 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <div className="flex-1 space-y-2">
+                        <p className="font-semibold text-lg">
+                          👨‍🎓 {leave.studentId?.name}{" "}
+                          <span className="text-sm text-gray-400">
+                            ({leave.year})
+                          </span>
+                        </p>
+                        <p className="text-sm text-gray-300">
+                          📧 {leave.studentId?.email}
+                        </p>
+                        <p className="text-sm text-gray-300">
+                          Teacher: {leave.teacher}
+                        </p>
+                        <p className="text-sm text-gray-300">
+                          {formatDate(leave.fromDate)} →{" "}
+                          {formatDate(leave.toDate)}
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          Reason: {leave.reason}
+                        </p>
+                        <p className="italic text-gray-500">
+                          {leave.comment || "—"}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                        {leave.status === "Pending" ? (
+                          <button
+                            className="flex-1 bg-[#ffd200] hover:bg-yellow-500 text-black px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
+                            onClick={() => setSelectedLeave(leave)}
+                          >
+                            <Check size={18} /> Review
+                          </button>
+                        ) : (
+                          <span
+                            className={`flex-1 px-4 py-2 rounded-xl text-center font-bold ${
+                              leave.status === "Approved"
+                                ? "bg-green-600"
+                                : "bg-red-600"
+                            }`}
+                          >
+                            {leave.status}
+                          </span>
+                        )}
+                        <button
+                          className="flex-1 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl font-semibold flex items-center justify-center gap-1 transition-transform hover:scale-105"
+                          onClick={() => handleDelete(leave._id)}
+                        >
+                          <Trash2 size={18} /> Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ))
       )}
 
-      {/* Modal for Review */}
+      {/* Review Modal */}
       <AnimatePresence>
         {selectedLeave && (
           <motion.div
@@ -212,10 +254,18 @@ export default function FacultyExamLeaves() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
             >
-              <h2 className="text-2xl font-bold text-[#ffd200] mb-4">Review Exam Leave</h2>
-              <p className="mb-2"><strong>Student:</strong> {selectedLeave.studentId?.name}</p>
-              <p className="mb-2"><strong>Email:</strong> {selectedLeave.studentId?.email}</p>
-              <p className="mb-4"><strong>Reason:</strong> {selectedLeave.reason}</p>
+              <h2 className="text-2xl font-bold text-[#ffd200] mb-4">
+                Review Exam Leave
+              </h2>
+              <p className="mb-2">
+                <strong>Student:</strong> {selectedLeave.studentId?.name}
+              </p>
+              <p className="mb-2">
+                <strong>Email:</strong> {selectedLeave.studentId?.email}
+              </p>
+              <p className="mb-4">
+                <strong>Reason:</strong> {selectedLeave.reason}
+              </p>
 
               <textarea
                 placeholder="Add comment (optional)"
