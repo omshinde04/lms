@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Check, X, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LeaveStatsChart from "../../../components/LeaveStatsChart";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 
 export default function FacultyDashboard() {
@@ -107,6 +109,31 @@ export default function FacultyDashboard() {
     groups[key].push(leave);
     return groups;
   }, {});
+
+
+const exportToExcel = () => {
+  // Convert JSON to worksheet
+  const worksheet = XLSX.utils.json_to_sheet(leaves.map(l => ({
+    Student: l.studentId?.name,
+    Email: l.studentId?.email,
+    Year: l.year,
+    Type: l.type,
+    Dates: `${l.fromDate} → ${l.toDate}`,
+    Reason: l.reason,
+    Faculty: l.facultyName,
+    Teacher: l.teacherName,
+    Status: l.status,
+    Comment: l.comment || "-"
+  })));
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Leaves Report");
+
+  // Save file
+  XLSX.writeFile(workbook, "Leaves_Report.xlsx");
+};
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
       {/* Faculty Profile */}
@@ -134,8 +161,33 @@ export default function FacultyDashboard() {
         </motion.div>
       )}
 
+
+
+{/* 📊 Export Button - Centered & Responsive */}
+    <div className="flex justify-center mb-10">
+      <button
+        onClick={exportToExcel}
+        className="
+          w-full sm:w-auto 
+          bg-[#ffd200] text-black 
+          px-6 py-3 
+          rounded-xl font-bold 
+          text-sm sm:text-base md:text-lg 
+          flex items-center justify-center gap-2
+          hover:bg-yellow-500 
+          transition duration-300 ease-in-out
+          shadow-md hover:shadow-lg
+        "
+      >
+        📊 <span>Export to Excel</span>
+      </button>
+    </div>
+
+
       {/* Dynamic Pie Chart */}
       <LeaveStatsChart leaves={leaves} />
+
+     
 
       {/* Dashboard Header */}
       <motion.h1

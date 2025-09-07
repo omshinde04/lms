@@ -43,14 +43,14 @@ export default function AboutPage() {
             About the Project
           </h1>
           <p className="text-gray-300 leading-relaxed mb-6 text-lg">
-            The <span className="text-[#ffd200] font-semibold">Leave Management System (LMS)</span> 
+            The <span className="text-[#ffd200] font-semibold">Leave Management System (LeaveDesk)</span> 
             is designed to simplify and digitize the process of applying for and approving leave 
             in a college environment. Traditionally, leave applications are handled manually on paper, 
             which often leads to inefficiencies, lack of transparency, and difficulties in maintaining 
             accurate records.
           </p>
           <p className="text-gray-400 leading-relaxed mb-8">
-            Our LMS provides a centralized online platform where{" "}
+            LeaveDesk provides a centralized online platform where{" "}
             <span className="text-[#93b874] font-medium">students</span>,{" "}
             <span className="text-[#93b874] font-medium">faculty</span>, and{" "}
             <span className="text-[#93b874] font-medium">administrators</span> 
@@ -58,14 +58,6 @@ export default function AboutPage() {
             tracking of attendance, improves transparency in approvals, and reduces paperwork — 
             making the leave process faster, smarter, and more reliable.
           </p>
-
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-3 bg-[#ffd200] text-black font-semibold rounded-xl shadow-lg hover:shadow-[#ffd200]/50 transition-all"
-          >
-            Learn More
-          </motion.button>
         </motion.div>
       </motion.div>
 
@@ -100,6 +92,60 @@ export default function AboutPage() {
             and institutions worldwide.
           </p>
         </motion.div>
+      </div>
+
+      {/* Team Section */}
+      <div className="mt-24 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-extrabold text-center text-[#ffd200] mb-12">
+          👩‍💻 Meet Our Team
+        </h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {[
+            {
+              name: "Nutan Khandave",
+              role: "Frontend Developer",
+              desc: "Built the responsive UI/UX using Next.js and Tailwind CSS, ensuring accessibility and smooth user interactions.",
+            },
+            {
+              name: "Jayshree Patil",
+              role: "Backend Developer",
+              desc: "Developed APIs and authentication system with Node.js, Next.js API routes, and MongoDB integration.",
+            },
+            {
+              name: "Ketakee Patil",
+              role: "Database & Deployment",
+              desc: "Handled MongoDB schema design, database operations, and deployment management using Vercel.",
+            },
+            {
+              name: "Tanaya Patil",
+              role: "Project Lead & Tester",
+              desc: "Coordinated project workflow, managed version control on GitHub, and performed end-to-end testing for quality assurance.",
+            },
+            {
+              name: "P.D. Jadhav",
+              role: "HOD",
+              desc: "Provided guidance and supervision throughout the project development, ensuring alignment with academic standards.",
+            },
+            {
+              name: "Prof. Sonali Vidhate",
+              role: "CC",
+              desc: "Supported and monitored project progress, providing valuable feedback and mentoring the team.",
+            },
+          ].map((member, idx) => (
+            <motion.div
+              key={idx}
+              className="p-6 bg-gray-800 rounded-2xl shadow-md hover:-translate-y-2 transition-transform"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.2 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-xl font-bold text-[#ffd200]">{member.name}</h3>
+              <p className="text-sm text-gray-400 mb-2">{member.role}</p>
+              <p className="text-gray-300 text-sm leading-relaxed">{member.desc}</p>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );
