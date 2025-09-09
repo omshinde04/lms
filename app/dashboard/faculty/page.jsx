@@ -113,7 +113,8 @@ export default function FacultyDashboard() {
 
 const exportToExcel = () => {
   // Convert JSON to worksheet
-  const worksheet = XLSX.utils.json_to_sheet(leaves.map(l => ({
+  const worksheet = XLSX.utils.json_to_sheet(
+  leaves.map(l => ({
     Student: l.studentId?.name,
     Email: l.studentId?.email,
     Year: l.year,
@@ -122,9 +123,11 @@ const exportToExcel = () => {
     Reason: l.reason,
     Faculty: l.facultyName,
     Teacher: l.teacherName,
+    Certificate: l.certificate ? l.certificate : "-",
     Status: l.status,
     Comment: l.comment || "-"
-  })));
+  }))
+);
 
   // Create workbook
   const workbook = XLSX.utils.book_new();
@@ -133,7 +136,6 @@ const exportToExcel = () => {
   // Save file
   XLSX.writeFile(workbook, "Leaves_Report.xlsx");
 };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
       {/* Faculty Profile */}
@@ -154,40 +156,33 @@ const exportToExcel = () => {
               👨‍🏫 {faculty.name}
             </h2>
             <p className="text-xs sm:text-sm text-gray-800">{faculty.email}</p>
-            <p className="text-xs sm:text-sm text-gray-700">
-              {faculty.role}
-            </p>
+            <p className="text-xs sm:text-sm text-gray-700">{faculty.role}</p>
           </div>
         </motion.div>
       )}
 
-
-
-{/* 📊 Export Button - Centered & Responsive */}
-    <div className="flex justify-center mb-10">
-      <button
-        onClick={exportToExcel}
-        className="
-          w-full sm:w-auto 
-          bg-[#ffd200] text-black 
-          px-6 py-3 
-          rounded-xl font-bold 
-          text-sm sm:text-base md:text-lg 
-          flex items-center justify-center gap-2
-          hover:bg-yellow-500 
-          transition duration-300 ease-in-out
-          shadow-md hover:shadow-lg
-        "
-      >
-        📊 <span>Export to Excel</span>
-      </button>
-    </div>
-
+      {/* 📊 Export Button - Centered & Responsive */}
+      <div className="flex justify-center mb-10">
+        <button
+          onClick={exportToExcel}
+          className="
+            w-full sm:w-auto 
+            bg-[#ffd200] text-black 
+            px-6 py-3 
+            rounded-xl font-bold 
+            text-sm sm:text-base md:text-lg 
+            flex items-center justify-center gap-2
+            hover:bg-yellow-500 
+            transition duration-300 ease-in-out
+            shadow-md hover:shadow-lg
+          "
+        >
+          📊 <span>Export to Excel</span>
+        </button>
+      </div>
 
       {/* Dynamic Pie Chart */}
       <LeaveStatsChart leaves={leaves} />
-
-     
 
       {/* Dashboard Header */}
       <motion.h1
@@ -219,10 +214,11 @@ const exportToExcel = () => {
                     <th className="py-3 px-6 text-left">Email</th>
                     <th className="py-3 px-6 text-left">Year</th>
                     <th className="py-3 px-6 text-left">Type</th>
+                    <th className="py-3 px-6 text-left">Certificate</th>
                     <th className="py-3 px-6 text-left">Dates</th>
                     <th className="py-3 px-6 text-left">Reason</th>
                     <th className="py-3 px-6 text-left">Faculty</th>
-                    <th className="py-3 px-6 text-left">Teacher</th> 
+                    <th className="py-3 px-6 text-left">Teacher</th>
                     <th className="py-3 px-6 text-left">Status</th>
                     <th className="py-3 px-6 text-left">Comment</th>
                     <th className="py-3 px-6 text-left">Action</th>
@@ -230,22 +226,67 @@ const exportToExcel = () => {
                 </thead>
                 <tbody>
                   {groupLeaves.map((leave) => (
-                    <tr key={leave._id} className="border-b border-gray-700 hover:bg-gray-700 transition-colors">
+                    <tr
+                      key={leave._id}
+                      className="border-b border-gray-700 hover:bg-gray-700 transition-colors"
+                    >
                       <td className="py-3 px-6">{leave.studentId?.name}</td>
                       <td className="py-3 px-6">{leave.studentId?.email}</td>
                       <td className="py-3 px-6">{leave.year}</td>
                       <td className="py-3 px-6">{leave.type}</td>
-                      <td className="py-3 px-6">{leave.fromDate} → {leave.toDate}</td>
+
+                      {/* ✅ Certificate column */}
+                      <td className="py-3 px-6">
+                        {leave.certificate ? (
+                          leave.certificate.endsWith(".pdf") ? (
+                            <a
+                              href={leave.certificate}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#ffd200] underline"
+                            >
+                              📄 View PDF
+                            </a>
+                          ) : (
+                            <a
+                              href={leave.certificate}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <img
+                                src={leave.certificate}
+                                alt="Certificate"
+                                className="w-12 h-12 object-cover rounded-lg border border-gray-600"
+                              />
+                            </a>
+                          )
+                        ) : (
+                          <span className="text-gray-500">—</span>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-6">
+                        {leave.fromDate} → {leave.toDate}
+                      </td>
                       <td className="py-3 px-6">{leave.reason}</td>
                       <td className="py-3 px-6">{leave.facultyName}</td>
-                      <td className="py-3 px-6">{leave.teacherName}</td> 
+                      <td className="py-3 px-6">{leave.teacherName}</td>
                       <td
                         className="py-3 px-6 font-bold"
-                        style={{ color: leave.status === "Approved" ? "#93b874" : leave.status === "Rejected" ? "#ff6363" : "#ffd200" }}
+                        style={{
+                          color:
+                            leave.status === "Approved"
+                              ? "#93b874"
+                              : leave.status === "Rejected"
+                              ? "#ff6363"
+                              : "#ffd200",
+                        }}
                       >
                         {leave.status}
                       </td>
-                      <td className="py-3 px-6 italic text-gray-300">{leave.comment || "—"}</td>
+                      <td className="py-3 px-6 italic text-gray-300">
+                        {leave.comment || "—"}
+                      </td>
                       <td className="py-3 px-6 flex gap-2">
                         {leave.status === "Pending" ? (
                           <button
@@ -273,17 +314,61 @@ const exportToExcel = () => {
             {/* Mobile Cards */}
             <div className="sm:hidden space-y-4">
               {groupLeaves.map((leave) => (
-                <motion.div key={leave._id} className="p-4 rounded-2xl bg-gray-900 shadow-md" whileHover={{ scale: 1.02 }}>
-                  <p><strong>👨‍🎓 {leave.studentId?.name}</strong> ({leave.year})</p>
+                <motion.div
+                  key={leave._id}
+                  className="p-4 rounded-2xl bg-gray-900 shadow-md"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <p>
+                    <strong>👨‍🎓 {leave.studentId?.name}</strong> ({leave.year})
+                  </p>
                   <p className="text-sm text-gray-300">📧 {leave.studentId?.email}</p>
                   <p className="text-sm text-gray-300">Type: {leave.type}</p>
-                  <p className="text-sm text-gray-300">{leave.fromDate} → {leave.toDate}</p>
+                  <p className="text-sm text-gray-300">
+                    {leave.fromDate} → {leave.toDate}
+                  </p>
                   <p className="text-sm text-gray-300">Reason: {leave.reason}</p>
                   <p className="text-sm text-gray-400">Faculty: {leave.facultyName}</p>
                   <p className="text-sm text-gray-400">Teacher: {leave.teacherName}</p>
+
+                  {/* ✅ Certificate (mobile) */}
+                  {leave.certificate && (
+                    <div className="mt-2">
+                      {leave.certificate.endsWith(".pdf") ? (
+                        <a
+                          href={leave.certificate}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#ffd200] underline"
+                        >
+                          📄 View PDF
+                        </a>
+                      ) : (
+                        <a
+                          href={leave.certificate}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <img
+                            src={leave.certificate}
+                            alt="Certificate"
+                            className="w-16 h-16 object-cover rounded-lg border border-gray-600"
+                          />
+                        </a>
+                      )}
+                    </div>
+                  )}
+
                   <p
                     className="font-bold mt-2"
-                    style={{ color: leave.status === "Approved" ? "#93b874" : leave.status === "Rejected" ? "#ff6363" : "#ffd200" }}
+                    style={{
+                      color:
+                        leave.status === "Approved"
+                          ? "#93b874"
+                          : leave.status === "Rejected"
+                          ? "#ff6363"
+                          : "#ffd200",
+                    }}
                   >
                     {leave.status}
                   </p>
@@ -327,10 +412,18 @@ const exportToExcel = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
             >
-              <h2 className="text-2xl font-bold text-[#ffd200] mb-4">Review Leave Request</h2>
-              <p className="mb-2"><strong>Student:</strong> {selectedLeave.studentId?.name}</p>
-              <p className="mb-2"><strong>Email:</strong> {selectedLeave.studentId?.email}</p>
-              <p className="mb-4"><strong>Reason:</strong> {selectedLeave.reason}</p>
+              <h2 className="text-2xl font-bold text-[#ffd200] mb-4">
+                Review Leave Request
+              </h2>
+              <p className="mb-2">
+                <strong>Student:</strong> {selectedLeave.studentId?.name}
+              </p>
+              <p className="mb-2">
+                <strong>Email:</strong> {selectedLeave.studentId?.email}
+              </p>
+              <p className="mb-4">
+                <strong>Reason:</strong> {selectedLeave.reason}
+              </p>
 
               <textarea
                 placeholder="Add comment (optional)"
@@ -371,5 +464,6 @@ const exportToExcel = () => {
       </AnimatePresence>
     </div>
   );
+
 
 }

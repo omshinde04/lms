@@ -12,6 +12,7 @@ const LeaveSchema = new mongoose.Schema(
     teacherName: { type: String, required: true }, // ✅ New field added
     status: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" },
     comment: { type: String, default: "" }, // ✅ Optional faculty comment
+    certificate: { type: String, default: null }, // ✅ New: file path or URL to uploaded certificate
   },
   { timestamps: true }
 );

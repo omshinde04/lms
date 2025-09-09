@@ -17,6 +17,7 @@ export default function StudentDashboard() {
     type: "Sick",
     reason: "",
     facultyName: "IT", // ✅ always facultyName
+    certificateUrl: "", // ✅ new field for uploaded certificate
   });
   const [token, setToken] = useState("");
 
@@ -78,55 +79,89 @@ export default function StudentDashboard() {
     fetchLeaves();
   }, [token]);
 
-  // Submit leave request
-  const handleApplyLeave = async () => {
-    const { fromDate, toDate, type, reason, facultyName, year } = formData;
+  // ✅ Handle file upload
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    if (!fromDate || !toDate || !type || !reason || !facultyName || !year) {
-      alert("All fields are required!");
+    try {
+      // simple local preview using Base64 (replace with your actual upload API)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, certificateUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("File upload error:", err);
+      alert("Failed to upload certificate.");
+    }
+  };
+// Submit leave request
+const handleApplyLeave = async () => {
+  const { fromDate, toDate, type, reason, facultyName, year, teacherName, certificate } = formData;
+
+  if (!fromDate || !toDate || !type || !reason || !facultyName || !year || !teacherName) {
+    alert("All fields are required!");
+    return;
+  }
+
+  try {
+    const formDataObj = new FormData();
+    formDataObj.append("fromDate", fromDate);
+    formDataObj.append("toDate", toDate);
+    formDataObj.append("type", type);
+    formDataObj.append("reason", reason);
+    formDataObj.append("facultyName", facultyName);
+    formDataObj.append("teacherName", teacherName);
+    formDataObj.append("year", year);
+
+    // 🔹 Append file only if uploaded
+    if (certificate) {
+      formDataObj.append("certificate", certificate);
+    }
+
+    const res = await fetch("/api/student/leaves", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`, // ✅ don't set Content-Type manually!
+      },
+      body: formDataObj,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Failed to submit leave request.");
       return;
     }
 
-    try {
-      const res = await fetch("/api/student/leaves", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData), // ✅ facultyName included
-      });
+    alert("Leave request submitted!");
+    setShowForm(false);
 
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || "Failed to submit leave request.");
-        return;
-      }
+    // Refresh leave list
+    const leaveRes = await fetch("/api/student/leaves", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const leaveData = await leaveRes.json();
+    setLeaves(leaveData.leaves || []);
 
-      alert("Leave request submitted!");
-      setShowForm(false);
+    // Reset form
+    setFormData((prev) => ({
+      ...prev,
+      fromDate: "",
+      toDate: "",
+      type: "Sick",
+      reason: "",
+      facultyName: "IT",
+      teacherName: "",
+      certificate: null,
+    }));
+  } catch (err) {
+    console.error("Leave submit error:", err);
+    alert("Error submitting leave request.");
+  }
+};
 
-      // Refresh leave list
-      const leaveRes = await fetch("/api/student/leaves", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await leaveRes.json();
-      setLeaves(data.leaves || []);
-
-      // Reset leave form
-      setFormData((prev) => ({
-        ...prev,
-        fromDate: "",
-        toDate: "",
-        type: "Sick",
-        reason: "",
-        facultyName: "IT", // ✅ reset as facultyName
-      }));
-    } catch (err) {
-      console.error(err);
-      alert("Error submitting leave request.");
-    }
-  };
 
   // Delete leave
   const handleDeleteLeave = async (leaveId) => {
@@ -158,6 +193,7 @@ export default function StudentDashboard() {
         Loading...
       </div>
     );
+
 return (
   <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
     {/* Header */}
@@ -215,13 +251,22 @@ return (
       <table className="min-w-full text-white bg-gray-900 rounded-xl text-sm sm:text-base">
         <thead className="bg-gray-800">
           <tr>
-            {["From", "To", "Type", "Year", "Faculty", "Reason", "Status", "Comment", "Action"].map(
-              (th) => (
-                <th key={th} className="py-2 px-4 sm:py-3 sm:px-6 text-left">
-                  {th}
-                </th>
-              )
-            )}
+            {[
+              "From",
+              "To",
+              "Type",
+              "Year",
+              "Faculty",
+              "Reason",
+              "Certificate",
+              "Status",
+              "Comment",
+              "Action",
+            ].map((th) => (
+              <th key={th} className="py-2 px-4 sm:py-3 sm:px-6 text-left">
+                {th}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -236,6 +281,37 @@ return (
               <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.year}</td>
               <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.facultyName}</td>
               <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.reason}</td>
+
+              {/* ✅ Certificate column */}
+<td className="py-2 px-4 sm:py-3 sm:px-6">
+  {leave.certificate ? (
+    leave.certificate.endsWith(".pdf") ? (
+      <a
+        href={leave.certificate}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[#ffd200] underline"
+      >
+        📄 View PDF
+      </a>
+    ) : (
+      <a
+        href={leave.certificate}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          src={leave.certificate}
+          alt="Certificate"
+          className="w-12 h-12 object-cover rounded-lg border border-gray-600"
+        />
+      </a>
+    )
+  ) : (
+    <span className="text-gray-500">—</span>
+  )}
+</td>
+
               <td
                 className="py-2 px-4 sm:py-3 sm:px-6 font-bold"
                 style={{
@@ -269,141 +345,184 @@ return (
         </tbody>
       </table>
     </div>
-{/* Apply Leave Modal */}
-{showForm && (
-  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-auto">
-    <motion.div
-      className="bg-gray-900 p-6 md:p-8 rounded-3xl w-full max-w-md shadow-xl"
-      initial={{ y: -50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-    >
-      <h2 className="text-2xl font-bold text-[#ffd200] mb-6 text-center">
-        Apply for Leave
-      </h2>
 
-      {/* Student Info */}
-      <label className="block text-sm font-semibold mb-1">Name</label>
-      <input
-        type="text"
-        placeholder="Enter your name"
-        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-        value={formData.name || ""}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-      />
+    {/* Apply Leave Modal */}
+    {showForm && (
+      <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 overflow-auto">
+        <motion.div
+          className="bg-gray-900 p-6 md:p-8 rounded-3xl w-full max-w-md shadow-xl"
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <h2 className="text-2xl font-bold text-[#ffd200] mb-6 text-center">
+            Apply for Leave
+          </h2>
 
-      <label className="block text-sm font-semibold mb-1">Email</label>
-      <input
-        type="email"
-        placeholder="Enter your email"
-        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-        value={formData.email || ""}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-      />
-
-      <label className="block text-sm font-semibold mb-1">Year</label>
-      <select
-        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-        value={formData.year || "FY"}
-        onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-      >
-        {years.map((y) => (
-          <option key={y} value={y}>
-            {y}
-          </option>
-        ))}
-      </select>
-
-      {/* Leave Info */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
-        <div className="w-full sm:w-1/2">
-          <label className="block text-sm font-semibold mb-1">From</label>
+          {/* Student Info */}
+          <label className="block text-sm font-semibold mb-1">Name</label>
           <input
-            type="date"
-            className="w-full p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.fromDate || ""}
+            type="text"
+            placeholder="Enter your name"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.name || ""}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+
+          <label className="block text-sm font-semibold mb-1">Email</label>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.email || ""}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          />
+
+          <label className="block text-sm font-semibold mb-1">Year</label>
+          <select
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.year || "FY"}
+            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+
+          {/* Leave Info */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
+            <div className="w-full sm:w-1/2">
+              <label className="block text-sm font-semibold mb-1">From</label>
+              <input
+                type="date"
+                className="w-full p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+                value={formData.fromDate || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, fromDate: e.target.value })
+                }
+              />
+            </div>
+            <div className="w-full sm:w-1/2">
+              <label className="block text-sm font-semibold mb-1">To</label>
+              <input
+                type="date"
+                className="w-full p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+                value={formData.toDate || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, toDate: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <label className="block text-sm font-semibold mb-1">Leave Type</label>
+          <select
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.type || "Sick"}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+          >
+            {leaveTypes.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+
+          <label className="block text-sm font-semibold mb-1">Reason</label>
+          <input
+            type="text"
+            placeholder="Enter reason for leave"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.reason || ""}
+            onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+          />
+
+          {/* Teacher Name */}
+          <label className="block text-sm font-semibold mb-1">Teacher Name</label>
+          <input
+            type="text"
+            placeholder="Enter teacher's name"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.teacherName || ""}
             onChange={(e) =>
-              setFormData({ ...formData, fromDate: e.target.value })
+              setFormData({ ...formData, teacherName: e.target.value })
             }
           />
-        </div>
-        <div className="w-full sm:w-1/2">
-          <label className="block text-sm font-semibold mb-1">To</label>
-          <input
-            type="date"
-            className="w-full p-3 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-            value={formData.toDate || ""}
+
+          <label className="block text-sm font-semibold mb-1">
+            Faculty Department
+          </label>
+          <select
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            value={formData.facultyName || "IT"}
             onChange={(e) =>
-              setFormData({ ...formData, toDate: e.target.value })
+              setFormData({ ...formData, facultyName: e.target.value })
             }
-          />
-        </div>
-      </div>
+          >
+            {faculties.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
 
-      <label className="block text-sm font-semibold mb-1">Leave Type</label>
-      <select
-        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-        value={formData.type || "Sick"}
-        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-      >
-        {leaveTypes.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
+          {/* ✅ Upload Certificate */}
+<label className="block text-sm font-semibold mb-1">
+  Upload Certificate
+</label>
+<input
+  type="file"
+  accept="image/*,application/pdf"
+  className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-      <label className="block text-sm font-semibold mb-1">Reason</label>
-      <input
-        type="text"
-        placeholder="Enter reason for leave"
-        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-        value={formData.reason || ""}
-        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+    setFormData((prev) => ({
+      ...prev,
+      certificate: file, // ✅ store actual file object
+      certificateUrl: URL.createObjectURL(file), // ✅ for preview only
+    }));
+  }}
+/>
+
+{/* ✅ Preview Section */}
+{formData.certificateUrl && (
+  <div className="mb-4">
+    {formData.certificate.type === "application/pdf" ? (
+      <p className="text-sm text-gray-300 italic">📄 PDF uploaded</p>
+    ) : (
+      <img
+        src={formData.certificateUrl}
+        alt="Certificate Preview"
+        className="w-32 h-32 object-cover rounded-lg border border-gray-600"
       />
-
-      {/* 🔹 New Teacher Name Input */}
-      <label className="block text-sm font-semibold mb-1">Teacher Name</label>
-      <input
-        type="text"
-        placeholder="Enter teacher's name"
-        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-        value={formData.teacherName || ""}
-        onChange={(e) => setFormData({ ...formData, teacherName: e.target.value })}
-      />
-
-      <label className="block text-sm font-semibold mb-1">Faculty Department</label>
-      <select
-        className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-        value={formData.facultyName || "IT"}
-        onChange={(e) => setFormData({ ...formData, facultyName: e.target.value })}
-      >
-        {faculties.map((f) => (
-          <option key={f} value={f}>
-            {f}
-          </option>
-        ))}
-      </select>
-
-      {/* Buttons */}
-      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
-        <button
-          className="bg-gray-600 px-5 py-2 rounded-xl hover:bg-gray-500 transition-colors font-semibold w-full sm:w-auto"
-          onClick={() => setShowForm(false)}
-        >
-          Cancel
-        </button>
-        <button
-          className="bg-[#93b874] px-5 py-2 rounded-xl hover:bg-green-600 transition-colors font-semibold w-full sm:w-auto"
-          onClick={handleApplyLeave}
-        >
-          Submit
-        </button>
-      </div>
-    </motion.div>
+    )}
   </div>
 )}
 
+
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
+            <button
+              className="bg-gray-600 px-5 py-2 rounded-xl hover:bg-gray-500 transition-colors font-semibold w-full sm:w-auto"
+              onClick={() => setShowForm(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-[#93b874] px-5 py-2 rounded-xl hover:bg-green-600 transition-colors font-semibold w-full sm:w-auto"
+              onClick={handleApplyLeave}
+            >
+              Submit
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    )}
   </div>
 );
+
 
 }

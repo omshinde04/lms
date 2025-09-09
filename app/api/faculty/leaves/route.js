@@ -25,9 +25,10 @@ export async function GET(req) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // 🔹 Fetch all leaves with student details
+    // 🔹 Fetch all leaves with student details + certificate
     const leaves = await Leave.find()
       .populate("studentId", "name email year")
+      .select("studentId year fromDate toDate type reason facultyName teacherName status comment certificate createdAt updatedAt")
       .sort({ createdAt: -1 });
 
     // ✅ API response

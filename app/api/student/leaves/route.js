@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { connectDB } from "@/lib/mongodb"; 
+import { connectDB } from "@/lib/mongodb";
 import Leave from "@/models/Leave";
+import fs from "fs";
+import path from "path";
 
 export async function POST(req) {
   await connectDB();
@@ -20,12 +22,38 @@ export async function POST(req) {
 
     const studentId = decoded.userId;
 
-    // 🔹 Extract request body
-    const { fromDate, toDate, type, reason, facultyName, teacherName, year, certificateUrl } = await req.json();
+    // 🔹 Use formData to handle both text + file
+    const formData = await req.formData();
+    const fromDate = formData.get("fromDate");
+    const toDate = formData.get("toDate");
+    const type = formData.get("type");
+    const reason = formData.get("reason");
+    const facultyName = formData.get("facultyName");
+    const teacherName = formData.get("teacherName");
+    const year = formData.get("year");
+    const certificateFile = formData.get("certificate"); // file object
 
     // 🔹 Validate required fields
     if (!fromDate || !toDate || !type || !reason || !facultyName || !teacherName || !year) {
       return NextResponse.json({ error: "All fields are required!" }, { status: 400 });
+    }
+
+    let certificateUrl = null;
+    if (certificateFile && certificateFile.name) {
+      const buffer = Buffer.from(await certificateFile.arrayBuffer());
+      const fileName = `${Date.now()}-${certificateFile.name}`;
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+
+      // Ensure upload dir exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const filePath = path.join(uploadDir, fileName);
+      fs.writeFileSync(filePath, buffer);
+
+      // Accessible URL
+      certificateUrl = `/uploads/${fileName}`;
     }
 
     // 🔹 Create leave request
@@ -38,6 +66,7 @@ export async function POST(req) {
       facultyName,
       teacherName, // ✅ Added new field
       year,
+      certificate: certificateUrl, // ✅ file URL or null
     });
 
     await newLeave.save();
@@ -65,7 +94,7 @@ export async function GET(req) {
 
     const studentId = decoded.userId;
 
-    // 🔹 Fetch student leaves including year & faculty
+    // 🔹 Fetch student leaves including year, faculty, teacher, certificate
     const leaves = await Leave.find({ studentId }).sort({ createdAt: -1 });
 
     return NextResponse.json({ leaves }, { status: 200 });
