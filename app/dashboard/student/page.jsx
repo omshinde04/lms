@@ -16,8 +16,10 @@ export default function StudentDashboard() {
     toDate: "",
     type: "Sick",
     reason: "",
-    facultyName: "IT", // ✅ always facultyName
-    certificateUrl: "", // ✅ new field for uploaded certificate
+    facultyName: "IT",
+    teacherName: "",
+    certificateFile: null, // ✅ store actual file
+    certificateUrl: "", // ✅ for preview & Cloudinary upload
   });
   const [token, setToken] = useState("");
 
@@ -25,13 +27,11 @@ export default function StudentDashboard() {
   const years = ["FY", "SY", "TY"];
   const leaveTypes = ["Sick", "Casual", "Maternity", "Emergency"];
 
-  // Get token from localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (storedToken) setToken(storedToken);
   }, []);
 
-  // Fetch profile + leaves
   useEffect(() => {
     if (!token) return;
 
@@ -49,8 +49,6 @@ export default function StudentDashboard() {
             email: data.student.email || "",
             year: data.student.year || "FY",
           }));
-        } else {
-          console.error("Profile fetch failed", res.status);
         }
       } catch (err) {
         console.error(err);
@@ -65,8 +63,6 @@ export default function StudentDashboard() {
         if (res.ok) {
           const data = await res.json();
           setLeaves(data.leaves || []);
-        } else {
-          console.error("Leaves fetch failed", res.status);
         }
       } catch (err) {
         console.error(err);
@@ -79,53 +75,84 @@ export default function StudentDashboard() {
     fetchLeaves();
   }, [token]);
 
-  // ✅ Handle file upload
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    try {
-      // simple local preview using Base64 (replace with your actual upload API)
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, certificateUrl: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error("File upload error:", err);
-      alert("Failed to upload certificate.");
+
+  
+const uploadCertificate = async (file) => {
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  if (file.size > maxSize) {
+    throw new Error("File size exceeds 10MB. Please select a smaller file.");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET); // must be unsigned
+
+  try {
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      const msg = result.error?.message || JSON.stringify(result.error) || "Upload failed";
+      throw new Error(msg);
     }
-  };
-// Submit leave request
-const handleApplyLeave = async () => {
-  const { fromDate, toDate, type, reason, facultyName, year, teacherName, certificate } = formData;
 
+    return result.secure_url; // ✅ URL to save in DB
+  } catch (err) {
+    console.error("Cloudinary upload error:", err);
+    throw new Error(err.message || "Failed to upload file.");
+  }
+};
+
+const handleApplyLeave = async () => {
+  const { fromDate, toDate, type, reason, facultyName, year, teacherName, certificateFile } = formData;
+
+  // ✅ Validate required fields
   if (!fromDate || !toDate || !type || !reason || !facultyName || !year || !teacherName) {
     alert("All fields are required!");
     return;
   }
 
-  try {
-    const formDataObj = new FormData();
-    formDataObj.append("fromDate", fromDate);
-    formDataObj.append("toDate", toDate);
-    formDataObj.append("type", type);
-    formDataObj.append("reason", reason);
-    formDataObj.append("facultyName", facultyName);
-    formDataObj.append("teacherName", teacherName);
-    formDataObj.append("year", year);
+  // ✅ Check certificate file size (10MB max)
+  if (certificateFile) {
+    const maxSize = 10 * 1024 * 1024; // 10 MB
+    if (certificateFile.size > maxSize) {
+      alert("Certificate file size exceeds 10MB. Please select a smaller file.");
+      return; // stop submission
+    }
+  }
 
-    // 🔹 Append file only if uploaded
-    if (certificate) {
-      formDataObj.append("certificate", certificate);
+  try {
+    let certificateUrl = "";
+
+    // Upload to Cloudinary if selected
+    if (certificateFile) {
+      certificateUrl = await uploadCertificate(certificateFile);
     }
 
     const res = await fetch("/api/student/leaves", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`, // ✅ don't set Content-Type manually!
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: formDataObj,
+      body: JSON.stringify({
+        fromDate,
+        toDate,
+        type,
+        reason,
+        facultyName,
+        teacherName,
+        year,
+        certificate: certificateUrl, // ✅ send URL
+      }),
     });
 
     const data = await res.json();
@@ -138,32 +165,27 @@ const handleApplyLeave = async () => {
     alert("Leave request submitted!");
     setShowForm(false);
 
-    // Refresh leave list
-    const leaveRes = await fetch("/api/student/leaves", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    // refresh leaves
+    const leaveRes = await fetch("/api/student/leaves", { headers: { Authorization: `Bearer ${token}` } });
     const leaveData = await leaveRes.json();
     setLeaves(leaveData.leaves || []);
 
-    // Reset form
-    setFormData((prev) => ({
-      ...prev,
+    setFormData({
       fromDate: "",
       toDate: "",
       type: "Sick",
       reason: "",
       facultyName: "IT",
       teacherName: "",
-      certificate: null,
-    }));
+      certificateFile: null,
+      certificateUrl: "",
+    });
   } catch (err) {
     console.error("Leave submit error:", err);
     alert("Error submitting leave request.");
   }
 };
 
-
-  // Delete leave
   const handleDeleteLeave = async (leaveId) => {
     if (!confirm("Are you sure you want to delete this leave request?")) return;
 
@@ -194,6 +216,7 @@ const handleApplyLeave = async () => {
       </div>
     );
 
+    
 return (
   <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white px-4 sm:px-6 pt-24 sm:pt-32 pb-20">
     {/* Header */}
@@ -283,34 +306,34 @@ return (
               <td className="py-2 px-4 sm:py-3 sm:px-6">{leave.reason}</td>
 
               {/* ✅ Certificate column */}
-<td className="py-2 px-4 sm:py-3 sm:px-6">
-  {leave.certificate ? (
-    leave.certificate.endsWith(".pdf") ? (
-      <a
-        href={leave.certificate}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[#ffd200] underline"
-      >
-        📄 View PDF
-      </a>
-    ) : (
-      <a
-        href={leave.certificate}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <img
-          src={leave.certificate}
-          alt="Certificate"
-          className="w-12 h-12 object-cover rounded-lg border border-gray-600"
-        />
-      </a>
-    )
-  ) : (
-    <span className="text-gray-500">—</span>
-  )}
-</td>
+              <td className="py-2 px-4 sm:py-3 sm:px-6">
+                {leave.certificate && leave.certificate !== "" ? (
+                  leave.certificate.endsWith(".pdf") ? (
+                    <a
+                      href={leave.certificate}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#ffd200] underline"
+                    >
+                      📄 View PDF
+                    </a>
+                  ) : (
+                    <a
+                      href={leave.certificate}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <img
+                        src={leave.certificate}
+                        alt="Certificate"
+                        className="w-12 h-12 object-cover rounded-lg border border-gray-600"
+                      />
+                    </a>
+                  )
+                ) : (
+                  <span className="text-gray-500">—</span>
+                )}
+              </td>
 
               <td
                 className="py-2 px-4 sm:py-3 sm:px-6 font-bold"
@@ -468,40 +491,37 @@ return (
           </select>
 
           {/* ✅ Upload Certificate */}
-<label className="block text-sm font-semibold mb-1">
-  Upload Certificate
-</label>
-<input
-  type="file"
-  accept="image/*,application/pdf"
-  className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
-  onChange={(e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+          <label className="block text-sm font-semibold mb-1">Upload Certificate</label>
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            className="w-full p-3 mb-4 rounded-xl bg-white text-black focus:outline-none focus:ring-2 focus:ring-[#ffd200]"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (!file) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      certificate: file, // ✅ store actual file object
-      certificateUrl: URL.createObjectURL(file), // ✅ for preview only
-    }));
-  }}
-/>
+              setFormData((prev) => ({
+                ...prev,
+                certificateFile: file, // ✅ store actual file object
+                certificateUrl: URL.createObjectURL(file), // ✅ for preview only
+              }));
+            }}
+          />
 
-{/* ✅ Preview Section */}
-{formData.certificateUrl && (
-  <div className="mb-4">
-    {formData.certificate.type === "application/pdf" ? (
-      <p className="text-sm text-gray-300 italic">📄 PDF uploaded</p>
-    ) : (
-      <img
-        src={formData.certificateUrl}
-        alt="Certificate Preview"
-        className="w-32 h-32 object-cover rounded-lg border border-gray-600"
-      />
-    )}
-  </div>
-)}
-
+          {/* ✅ Preview Section */}
+          {formData.certificateUrl && (
+            <div className="mb-4">
+              {formData.certificateFile.type === "application/pdf" ? (
+                <p className="text-sm text-gray-300 italic">📄 PDF uploaded</p>
+              ) : (
+                <img
+                  src={formData.certificateUrl}
+                  alt="Certificate Preview"
+                  className="w-32 h-32 object-cover rounded-lg border border-gray-600"
+                />
+              )}
+            </div>
+          )}
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
@@ -523,6 +543,7 @@ return (
     )}
   </div>
 );
+
 
 
 }
